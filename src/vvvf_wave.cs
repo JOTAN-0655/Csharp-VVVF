@@ -770,7 +770,11 @@ namespace VVVF_Generator_Porting
 			Pulse_Mode pulse_Mode = Pulse_Mode.P_1;
 			if (61 <= sin_freq)
 				pulse_Mode = Pulse_Mode.P_1;
-			else if (58 <= sin_freq) pulse_Mode = Pulse_Mode.P_Wide_3;
+			else if (58 <= sin_freq)
+			{
+				pulse_Mode = Pulse_Mode.P_Wide_3;
+				amplitude = 0.8 + 0.2 / 3.0 * (sin_freq - 58);
+			}
 			else if (49 <= sin_freq)
 			{
 				pulse_Mode = Pulse_Mode.Not_In_Sync;
@@ -778,7 +782,7 @@ namespace VVVF_Generator_Porting
 				expect_saw_angle_freq = M_2PI * base_freq;
 			}
 			else if (46 <= sin_freq)
-            {
+			{
 				pulse_Mode = Pulse_Mode.Not_In_Sync;
 				double base_freq = (double)730 - 50.0 / 49.0 * (sin_freq); //170.0/54.0*(sin_freq);
 				expect_saw_angle_freq = M_2PI * base_freq;
