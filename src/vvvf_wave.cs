@@ -481,7 +481,10 @@ namespace VVVF_Generator_Porting
 			if (67 <= sin_freq)
 				pulse_Mode = Pulse_Mode.P_1;
 			else if (60 <= sin_freq)
+            {
 				pulse_Mode = Pulse_Mode.P_Wide_3;
+				amplitude = 0.8 + 0.2 / 8.0 * (sin_freq - 60);
+			}
 			else if (49 <= sin_freq)
 			{
 				double expect_saw_freq = 780 + (1820 - 780) / 11 * (sin_freq - 49);
@@ -773,7 +776,7 @@ namespace VVVF_Generator_Porting
 			else if (58 <= sin_freq)
 			{
 				pulse_Mode = Pulse_Mode.P_Wide_3;
-				amplitude = 0.8 + 0.2 / 3.0 * (sin_freq - 58);
+				amplitude = 0.8 + 0.2 / 4.0 * (sin_freq - 58);
 			}
 			else if (49 <= sin_freq)
 			{
@@ -786,6 +789,11 @@ namespace VVVF_Generator_Porting
 				pulse_Mode = Pulse_Mode.Not_In_Sync;
 				double base_freq = (double)730 - 50.0 / 49.0 * (sin_freq); //170.0/54.0*(sin_freq);
 				expect_saw_angle_freq = M_2PI * base_freq;
+			}
+			else if(brake && sin_freq <= 4)
+            {
+				pulse_Mode = Pulse_Mode.Not_In_Sync;
+				expect_saw_angle_freq = M_2PI * 200;
 			}
 			else
 			{
@@ -811,7 +819,7 @@ namespace VVVF_Generator_Porting
 				random_freq_move_count++;
 				if (random_freq_move_count == 30)
 					random_freq_move_count = 0;
-			}
+            }
 
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
