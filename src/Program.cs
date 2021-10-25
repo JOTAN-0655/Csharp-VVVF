@@ -16,7 +16,7 @@ namespace VVVF_Generator_Porting
             String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
 
 
-            String fileName = @"Z:\電子工作\vvvf/" + gen_time + ".wav";
+            String fileName = @"YourPath/" + gen_time + ".wav";
 
             BinaryWriter writer = new BinaryWriter(new FileStream(fileName, FileMode.Create));
 
