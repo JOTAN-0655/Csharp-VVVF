@@ -5,9 +5,8 @@ Generating vvvf sound on PC using C#
 C# console app on VisualStudio.
 
 # Output
-This application will output a sound wave form in pcm extension.<br>
-Default is 40 kHz sampling data.<br>
-Normally, you need pcm converter like audition.<br>
+This application will output a sound wave form in wav extension.<br>
+Default is 100 kHz sampling data.<br>
 
 # Parent Project
 This program was ported from : <br>
