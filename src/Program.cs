@@ -9,14 +9,14 @@ namespace VVVF_Generator_Porting
 
         static double count = 0;
         static int div_dreq = 100 * 1000;
-        static void generate_sound()
+        static void generate_sound(String output_path)
         {
 
             DateTime dt = DateTime.Now;
             String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
 
 
-            String fileName = @"YourPath/" + gen_time + ".wav";
+            String fileName = output_path + "\\" + gen_time + ".wav";
 
             BinaryWriter writer = new BinaryWriter(new FileStream(fileName, FileMode.Create));
 
@@ -91,9 +91,12 @@ namespace VVVF_Generator_Porting
         }
         static void Main(string[] args)
         {
+            Console.Write("Enter the export path for vvvf sound : ");
+            String output_path = Console.ReadLine();
+
             DateTime startDt = DateTime.Now;
 
-            generate_sound();
+            generate_sound(output_path);
 
             DateTime endDt = DateTime.Now;
 
