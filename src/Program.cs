@@ -8,7 +8,7 @@ namespace VVVF_Generator_Porting
     {
 
         static double count = 0;
-        static int div_dreq = 100 * 1000;
+        static int div_dreq = 50 * 1000;
         static void generate_sound(String output_path)
         {
 
@@ -45,8 +45,8 @@ namespace VVVF_Generator_Porting
                 vvvf_wave.sin_time += 1.00 / div_dreq;
                 vvvf_wave.saw_time += 1.00 / div_dreq;
 
-                Wave_Values wv_U = calculate_E233(brake, Math.PI * 2.0 / 3.0 * 0, sin_angle_freq / (Math.PI * 2));
-                Wave_Values wv_V = calculate_E233(brake, Math.PI * 2.0 / 3.0 * 1, sin_angle_freq / (Math.PI * 2));
+                Wave_Values wv_U = calculate_207_1000_update(brake, Math.PI * 2.0 / 3.0 * 0, sin_angle_freq / (Math.PI * 2));
+                Wave_Values wv_V = calculate_207_1000_update(brake, Math.PI * 2.0 / 3.0 * 1, sin_angle_freq / (Math.PI * 2));
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -60,8 +60,8 @@ namespace VVVF_Generator_Porting
                 if (count % 20 == 0 && do_frequency_change)
                 {
                     double sin_new_angle_freq = sin_angle_freq;
-                    if (!brake) sin_new_angle_freq += Math.PI / 500;
-                    else sin_new_angle_freq -= Math.PI / 500;
+                    if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.25;
+                    else sin_new_angle_freq -= Math.PI / 500 * 1.25;
                     double amp = sin_angle_freq / sin_new_angle_freq;
                     sin_angle_freq = sin_new_angle_freq;
                     sin_time = amp * sin_time;
