@@ -218,7 +218,7 @@ namespace VVVF_Generator_Porting
 			else if (44 <= wave_stat)
 				pulse_mode = Pulse_Mode.P_5;
 			else if (31 <= wave_stat)
-				pulse_mode = Pulse_Mode.P_10;
+				pulse_mode = Pulse_Mode.P_9;
 			else if (14 <= wave_stat)
 				pulse_mode = Pulse_Mode.P_15;
 			else if (wave_stat < 14 && !brake)

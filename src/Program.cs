@@ -45,8 +45,8 @@ namespace VVVF_Generator_Porting
                 vvvf_wave.sin_time += 1.00 / div_dreq;
                 vvvf_wave.saw_time += 1.00 / div_dreq;
 
-                Wave_Values wv_U = calculate_207_1000_update(brake, Math.PI * 2.0 / 3.0 * 0, sin_angle_freq / (Math.PI * 2));
-                Wave_Values wv_V = calculate_207_1000_update(brake, Math.PI * 2.0 / 3.0 * 1, sin_angle_freq / (Math.PI * 2));
+                Wave_Values wv_U = calculate_207(brake, Math.PI * 2.0 / 3.0 * 0, sin_angle_freq / (Math.PI * 2));
+                Wave_Values wv_V = calculate_207(brake, Math.PI * 2.0 / 3.0 * 1, sin_angle_freq / (Math.PI * 2));
 
                 for (int i = 0; i < 1; i++)
                 {
