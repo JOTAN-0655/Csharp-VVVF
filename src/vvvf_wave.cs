@@ -222,7 +222,7 @@ namespace VVVF_Generator_Porting
 			return wv;
 		}
 
-		public static Wave_Values calculate_E231(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_E231(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 65);
 			double expect_saw_angle_freq = 0;
@@ -255,7 +255,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_207(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_207(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 60);
 
@@ -294,7 +294,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_doremi(bool brake, double initial_phase,double wave_stat)
+		public static Wave_Values calculate_doremi(bool brake, bool mascon_on, bool free_run, double initial_phase,double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 80);
 
@@ -365,7 +365,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_E235(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_E235(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 54);
 
@@ -414,7 +414,7 @@ namespace VVVF_Generator_Porting
 			return wv;
 		}
 
-		public static Wave_Values calculate_E209(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_E209(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 53);
 
@@ -450,7 +450,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_9820_mitsubishi(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_9820_mitsubishi(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 55);
 
@@ -488,7 +488,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_9820_hitachi(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_9820_hitachi(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 65);
 
@@ -516,7 +516,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_E233(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_E233(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 50);
 			double expect_saw_angle_freq = 1;
@@ -534,7 +534,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_silent(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_silent(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 60);
 			double expect_saw_angle_freq = 1;
@@ -550,7 +550,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_mitsubishi_gto(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_mitsubishi_gto(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 63);
 
@@ -594,7 +594,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_toyo_IGBT(bool brake, double initial_phase, double wave_stat )
+		public static Wave_Values calculate_toyo_IGBT(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat )
 		{
 			if (brake)
 			{
@@ -644,7 +644,7 @@ namespace VVVF_Generator_Porting
 			}
 		}
 
-		public static Wave_Values calculate_Famima(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_Famima(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 
 			double amplitude = get_Amplitude(wave_stat, 60);
@@ -690,7 +690,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_real_doremi(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_real_doremi(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 
 			double amplitude = get_Amplitude(wave_stat, 80);
@@ -760,7 +760,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_toubu_50050(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_toubu_50050(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 
 			double amplitude = get_Amplitude(wave_stat, 61);
@@ -800,7 +800,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 	
-		public static Wave_Values calculate_207_1000_update(bool brake,double initial_phase, double wave_stat)
+		public static Wave_Values calculate_207_1000_update(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
         {
 			double amplitude = get_Amplitude(wave_stat, 60);
 
@@ -859,7 +859,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_225_5100_mitsubishi(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_225_5100_mitsubishi(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = 1.0;
 
@@ -902,7 +902,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_321_hitachi(bool brake,double initial_phase, double wave_stat)
+		public static Wave_Values calculate_321_hitachi(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
         {
 			double amplitude = 1.0;
 
@@ -945,7 +945,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_toyo_GTO(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_toyo_GTO(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = 1.0;
 
@@ -1033,7 +1033,7 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_keihan_13000_toyo_IGBT(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_keihan_13000_toyo_IGBT(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 55);
 
@@ -1057,14 +1057,17 @@ namespace VVVF_Generator_Porting
 			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
 
-		public static Wave_Values calculate_toei_6300_3(bool brake, double initial_phase, double wave_stat)
+		public static Wave_Values calculate_toei_6300_3(bool brake,bool mascon_on, bool free_run, double initial_phase, double wave_stat)
 		{
 			double amplitude = get_Amplitude(wave_stat, 60);
+			if (mascon_on == false && amplitude < 0.65)
+				amplitude = 0.0;
+
 			double expect_saw_angle_freq = sin_angle_freq * 10;
 			Pulse_Mode pulse_Mode = Pulse_Mode.P_1;
 			if (60 <= wave_stat)
 				pulse_Mode = Pulse_Mode.P_1;
-			else if (52.5 <= wave_stat)
+			else if (52.5 <= wave_stat || free_run)
 				pulse_Mode = Pulse_Mode.P_3;
 			else if (15 <= wave_stat)
 			{
