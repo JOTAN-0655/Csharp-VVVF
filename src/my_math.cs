@@ -113,7 +113,7 @@ namespace VVVF_Generator_Porting
 
         static public int my_random()
         {
-            if (++ramdom_current_loc == random_table_size)
+            if (++ramdom_current_loc >= random_table_size)
             {
                 ramdom_current_loc = 0;
             }

@@ -8,7 +8,7 @@ namespace VVVF_Generator_Porting
     {
 
         static double count = 0;
-        static int div_dreq = 50 * 1000;
+        static int div_dreq = 192 * 1000;
         static void generate_sound(String output_path)
         {
 
@@ -40,28 +40,32 @@ namespace VVVF_Generator_Porting
 
             Int32 sound_block_count = 0;
 
+            double wave_stat = 0;
+            int mascon_count = 0;
+            bool mason_off = false;
+
             while (true)
             {
                 vvvf_wave.sin_time += 1.00 / div_dreq;
                 vvvf_wave.saw_time += 1.00 / div_dreq;
 
-                Wave_Values wv_U = calculate_207(brake, Math.PI * 2.0 / 3.0 * 0, sin_angle_freq / (Math.PI * 2));
-                Wave_Values wv_V = calculate_207(brake, Math.PI * 2.0 / 3.0 * 1, sin_angle_freq / (Math.PI * 2));
+                Wave_Values wv_U = calculate_toyo_IGBT(brake, Math.PI * 2.0 / 3.0 * 0, wave_stat );
+                Wave_Values wv_V = calculate_toyo_IGBT(brake, Math.PI * 2.0 / 3.0 * 1, wave_stat );
 
                 for (int i = 0; i < 1; i++)
                 {
-                    if (wv_U.pwm_value - wv_V.pwm_value > 0) writer.Write((byte)0x90);
-                    else if (wv_U.pwm_value - wv_V.pwm_value < 0) writer.Write((byte)0x70);
+                    if (wv_U.pwm_value - wv_V.pwm_value > 0) writer.Write((byte)0xB0);
+                    else if (wv_U.pwm_value - wv_V.pwm_value < 0) writer.Write((byte)0x50);
                     else writer.Write((byte)0x80);
                 }
                 sound_block_count++;
 
                 count++;
-                if (count % 20 == 0 && do_frequency_change)
+                if (count % 60 == 0 && do_frequency_change)
                 {
                     double sin_new_angle_freq = sin_angle_freq;
-                    if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.25;
-                    else sin_new_angle_freq -= Math.PI / 500 * 1.25;
+                    if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
+                    else sin_new_angle_freq -= Math.PI / 500 * 1.5;
                     double amp = sin_angle_freq / sin_new_angle_freq;
                     sin_angle_freq = sin_new_angle_freq;
                     sin_time = amp * sin_time;
@@ -72,12 +76,26 @@ namespace VVVF_Generator_Porting
                     do_frequency_change = false;
                     count = 0;
                 }
-                else if (count / div_dreq > 0 && !do_frequency_change)
+                else if (count / div_dreq > 2 && !do_frequency_change)
                 {
                     do_frequency_change = true;
                     brake = true;
                 }
                 else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
+
+
+                if (do_frequency_change)
+                {
+                    if(mason_off == true) mason_off = false;
+                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / 80000.0;
+                    if (++mascon_count > 80000) mascon_count = 80000;
+                }
+                else
+                {
+                    if (mason_off == false) mason_off = true;
+                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / 80000.0;
+                    if (--mascon_count < 0) mascon_count = 0;
+                }
 
             }
 
