@@ -43,14 +43,15 @@ namespace VVVF_Generator_Porting
             double wave_stat = 0;
             int mascon_count = 80000;
             bool mason_off = false;
+            int temp_count = 0;
 
             while (true)
             {
                 vvvf_wave.sin_time += 1.00 / div_dreq;
                 vvvf_wave.saw_time += 1.00 / div_dreq;
 
-                Wave_Values wv_U = calculate_toei_6300_3(brake,!mason_off, mascon_count != 80000, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                Wave_Values wv_V = calculate_toei_6300_3(brake, !mason_off,mascon_count != 80000, Math.PI * 2.0 / 3.0 * 1, wave_stat );
+                Wave_Values wv_U = calculate_E233(brake,!mason_off, mascon_count != 80000, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                Wave_Values wv_V = calculate_E233(brake, !mason_off,mascon_count != 80000, Math.PI * 2.0 / 3.0 * 1, wave_stat );
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -71,19 +72,58 @@ namespace VVVF_Generator_Porting
                     sin_time = amp * sin_time;
                 }
 
-                if (sin_angle_freq / 2 / Math.PI > 100 && !brake && do_frequency_change)
+                if(temp_count == 0)
                 {
-                    do_frequency_change = false;
-                    mason_off = true;
-                    count = 0;
-                }
-                else if (count / div_dreq > 2 && !do_frequency_change)
+                    if (sin_angle_freq / 2 / Math.PI > 2 && !brake && do_frequency_change)
+                    {
+                        do_frequency_change = false;
+                        mason_off = true;
+                        count = 0;
+                    }
+                    else if (count / div_dreq > 1 && !do_frequency_change)
+                    {
+                        do_frequency_change = true;
+                        mason_off = false;
+                        brake = false;
+                        temp_count++;
+                    }
+                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
+                }else if(temp_count == 1)
                 {
-                    do_frequency_change = true;
-                    mason_off = false;
-                    brake = true;
+                    if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
+                    {
+                        do_frequency_change = false;
+                        mason_off = true;
+                        count = 0;
+                    }
+                    else if (count / div_dreq > 1 && !do_frequency_change)
+                    {
+                        do_frequency_change = true;
+                        mason_off = false;
+                        brake = true;
+                        temp_count++;
+                    }
+                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
+                }else if(temp_count == 2)
+                {
+                    if (sin_angle_freq / 2 / Math.PI < 30 && brake && do_frequency_change) {
+                        do_frequency_change = false;
+                        mason_off = true;
+                        count = 0;
+                    }
+                    else if (count / div_dreq > 1 && !do_frequency_change)
+                    {
+                        do_frequency_change = true;
+                        mason_off = false;
+                        brake = true;
+                        temp_count++;
+                    }
                 }
-                else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
+                else
+                {
+                    if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
+                }
+               
 
 
                 if (!mason_off)
@@ -109,8 +149,16 @@ namespace VVVF_Generator_Porting
         }
         static void Main(string[] args)
         {
-            Console.Write("Enter the export path for vvvf sound : ");
-            String output_path = Console.ReadLine();
+            String output_path = "";
+            while(output_path.Length == 0)
+            {
+                Console.Write("Enter the export path for vvvf sound : ");
+                output_path = Console.ReadLine();
+                if(output_path.Length == 0)
+                {
+                    Console.WriteLine("Error. Reenter a path.");
+                }
+            }
 
             DateTime startDt = DateTime.Now;
 
