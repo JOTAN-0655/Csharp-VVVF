@@ -6,7 +6,6 @@ namespace VVVF_Generator_Porting
 {
     internal class Program
     {
-
         static double count = 0;
         static int div_dreq = 100 * 1000;
         static void generate_sound(String output_path)
@@ -50,8 +49,8 @@ namespace VVVF_Generator_Porting
                 vvvf_wave.sin_time += 1.00 / div_dreq;
                 vvvf_wave.saw_time += 1.00 / div_dreq;
 
-                Wave_Values wv_U = calculate_E233(brake,!mason_off, mascon_count != 80000, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                Wave_Values wv_V = calculate_E233(brake, !mason_off,mascon_count != 80000, Math.PI * 2.0 / 3.0 * 1, wave_stat );
+                Wave_Values wv_U = calculate_toei_6300_3(brake, !mason_off, mascon_count != 80000, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                Wave_Values wv_V = calculate_toei_6300_3(brake, !mason_off,mascon_count != 80000, Math.PI * 2.0 / 3.0 * 1, wave_stat );
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -72,7 +71,10 @@ namespace VVVF_Generator_Porting
                     sin_time = amp * sin_time;
                 }
 
-                if(temp_count == 0)
+
+                
+
+                if (temp_count == 0)
                 {
                     if (sin_angle_freq / 2 / Math.PI > 2 && !brake && do_frequency_change)
                     {
@@ -88,7 +90,8 @@ namespace VVVF_Generator_Porting
                         temp_count++;
                     }
                     else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }else if(temp_count == 1)
+                }
+                else if(temp_count == 1)
                 {
                     if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
                     {
@@ -115,9 +118,27 @@ namespace VVVF_Generator_Porting
                     {
                         do_frequency_change = true;
                         mason_off = false;
+                        brake = false;
+                        temp_count++;
+                    }
+                }
+                else if (temp_count == 3)
+                {
+                    if (sin_angle_freq / 2 / Math.PI > 45 && !brake && do_frequency_change)
+                    {
+                        do_frequency_change = false;
+                        mason_off = true;
+                        
+                        count = 0;
+                    }
+                    else if (count / div_dreq > 2 && !do_frequency_change)
+                    {
+                        do_frequency_change = true;
+                        mason_off = false;
                         brake = true;
                         temp_count++;
                     }
+                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
                 }
                 else
                 {

@@ -1196,5 +1196,46 @@ namespace VVVF_Generator_Porting
 			}
 			return calculate_common(pulse_mode, expect_saw_angle_freq, initial_phase, amplitude);
 		}
+
+		public static Wave_Values calculate_tokyuu_5000(bool brake, bool mascon_on, bool free_run, double initial_phase, double wave_stat)
+		{
+
+			double amplitude = get_Amplitude(wave_stat, 61);
+			double expect_saw_angle_freq = 1;
+			Pulse_Mode pulse_Mode = Pulse_Mode.P_1;
+			if (61 <= wave_stat)
+				pulse_Mode = Pulse_Mode.P_1;
+			else if (55 <= wave_stat)
+			{
+				pulse_Mode = Pulse_Mode.P_Wide_3;
+				amplitude = 0.8 + 0.2 / 4.0 * (wave_stat - 58);
+			}
+			else if (55 <= wave_stat)
+			{
+				pulse_Mode = Pulse_Mode.Not_In_Sync;
+				double base_freq = (double)680 + 1140 / 9.0 * (wave_stat - 49); //170.0/54.0*(wave_stat);
+				expect_saw_angle_freq = M_2PI * base_freq;
+			}
+			else if (42 <= wave_stat)
+			{
+				pulse_Mode = Pulse_Mode.Not_In_Sync;
+				double base_freq = (double)730 - 50.0 / 49.0 * (wave_stat); //170.0/54.0*(wave_stat);
+				expect_saw_angle_freq = M_2PI * base_freq;
+			}
+			else if (brake && wave_stat <= 4)
+			{
+				pulse_Mode = Pulse_Mode.Not_In_Sync;
+				expect_saw_angle_freq = M_2PI * 200;
+			}
+			else
+			{
+				pulse_Mode = Pulse_Mode.Not_In_Sync;
+				double base_freq = (double)730 - 50.0 / 49.0 * (wave_stat); //170.0/54.0*(wave_stat);
+				expect_saw_angle_freq = get_random_freq((int)base_freq, 20) * M_2PI;
+			}
+
+			return calculate_common(pulse_Mode, expect_saw_angle_freq, initial_phase, amplitude);
+		}
+
 	}
 }
