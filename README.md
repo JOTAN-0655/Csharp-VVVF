@@ -11,7 +11,7 @@ Default is 100 kHz sampling data.<br>
 
 ## Video
 This application will output a wave form view video in avi extention.<br>
-It is required to use OpenCV dependencies on visualstudio to use this also openH264
+It is required to use OpenCV dependencies on visualstudio and also openH264 to generate video<br>
 
 # Parent Project
 This program was ported from : <br>
