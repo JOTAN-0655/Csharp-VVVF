@@ -16,6 +16,8 @@ It is required to use OpenCV dependencies on visualstudio and also openH264 to g
 ### openH264 file
 Its file name will like `openh264-1.8.0-win64.dll.bz2` <br>
 You can download openH264 file from here https://github.com/cisco/openh264/releases <br>
+After you've download it, you just extract bz2 file and you will find `openh264-1.8.0-win64.dll`.<br>
+This file should be placed same directory of console app exe file.
 
 # Parent Project
 This program was ported from : <br>
