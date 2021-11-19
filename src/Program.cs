@@ -53,8 +53,8 @@ namespace VVVF_Generator_Porting
                 vvvf_wave.sin_time += 1.00 / div_freq;
                 vvvf_wave.saw_time += 1.00 / div_freq;
 
-                Wave_Values wv_U = calculate_tokyuu_5000(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                Wave_Values wv_V = calculate_tokyuu_5000(brake, !mason_off,mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat );
+                Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off,mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat );
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -183,7 +183,7 @@ namespace VVVF_Generator_Porting
 
             int image_width = 2000;
             int image_height = 500;
-            int movie_div = 1000;
+            int movie_div = 3000;
             int wave_height = 100;
 
             String fileName = output_path + "\\" + gen_time + ".avi";
@@ -217,8 +217,8 @@ namespace VVVF_Generator_Porting
                         sin_time += Math.PI / 50000.0;
                         saw_time += Math.PI / 50000.0;
 
-                        Wave_Values wv_U = calculate_tokyuu_5000(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                        Wave_Values wv_V = calculate_tokyuu_5000(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat);
+                        Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                        Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat);
 
                         int voltage_stat = (int)(wv_U.pwm_value - wv_V.pwm_value);
                         points_U[i] = (int)wv_U.pwm_value;
@@ -357,7 +357,7 @@ namespace VVVF_Generator_Porting
 
             DateTime startDt = DateTime.Now;
 
-            //generate_sound(output_path);
+            generate_sound(output_path);
             generate_video(output_path);
 
             DateTime endDt = DateTime.Now;
