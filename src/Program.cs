@@ -12,9 +12,116 @@ namespace VVVF_Generator_Porting
         static double count = 0;
         static int div_freq = 192 * 1000;
         static int mascon_off_count = 120000;
+
+        // variables for controlling parameters
+        static Boolean do_frequency_change = true;
+        static Boolean brake = false;
+
+        static double wave_stat = 0;
+        static int mascon_count = mascon_off_count;
+        static bool mascon_off = false;
+        static int temp_count = 0;
+
+        static void reset_control_variables()
+        {
+            do_frequency_change = true;
+            brake = false;
+
+            wave_stat = 0;
+            mascon_count = mascon_off_count;
+            mascon_off = false;
+            temp_count = 0;
+        }
+
+        static Boolean check_for_freq_change()
+        {
+            count++;
+            if (count % 60 == 0 && do_frequency_change && mascon_count == mascon_off_count)
+            {
+                double sin_new_angle_freq = sin_angle_freq;
+                if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
+                else sin_new_angle_freq -= Math.PI / 500 * 1.5;
+                double amp = sin_angle_freq / sin_new_angle_freq;
+                sin_angle_freq = sin_new_angle_freq;
+                sin_time = amp * sin_time;
+            }
+
+            if (temp_count == 0)
+            {
+                if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
+                {
+                    do_frequency_change = false;
+                    mascon_off = true;
+                    count = 0;
+                }
+                else if (count / div_freq > 2 && !do_frequency_change)
+                {
+                    do_frequency_change = true;
+                    mascon_off = false;
+                    brake = true;
+                    temp_count++;
+                }
+            }
+            else if (temp_count == 1)
+            {
+                if (sin_angle_freq / 2 / Math.PI < 30 && brake && do_frequency_change)
+                {
+                    do_frequency_change = false;
+                    mascon_off = true;
+                    count = 0;
+                }
+                else if (count / div_freq > 2 && !do_frequency_change)
+                {
+                    do_frequency_change = true;
+                    mascon_off = false;
+                    brake = false;
+                    temp_count++;
+                }
+            }
+            else if (temp_count == 2)
+            {
+                if (sin_angle_freq / 2 / Math.PI > 45 && !brake && do_frequency_change)
+                {
+                    do_frequency_change = false;
+                    mascon_off = true;
+
+                    count = 0;
+                }
+                else if (count / div_freq > 2 && !do_frequency_change)
+                {
+                    do_frequency_change = true;
+                    mascon_off = false;
+                    brake = true;
+                    temp_count++;
+                }
+            }
+            else
+            {
+                if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) return false;
+            }
+
+
+
+            if (!mascon_off)
+            {
+                wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
+                if (++mascon_count > mascon_off_count) mascon_count = mascon_off_count;
+            }
+            else
+            {
+                wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
+                if (--mascon_count < 0) mascon_count = 0;
+            }
+
+            return true;
+        }
+
         static void generate_sound(String output_path)
         {
+            reset_control_variables();
+            reset_all_variables();
 
+            Int32 sound_block_count = 0;
             DateTime dt = DateTime.Now;
             String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
 
@@ -38,23 +145,15 @@ namespace VVVF_Generator_Porting
             writer.Write(0x61746164);
             writer.Write(new byte[] { 0x00, 0x00, 0x00, 0x00 }); //WAVE SIZE
 
-            Boolean do_frequency_change = true;
-            Boolean brake = false;
+            bool loop = true;
 
-            Int32 sound_block_count = 0;
-
-            double wave_stat = 0;
-            int mascon_count = mascon_off_count;
-            bool mason_off = false;
-            int temp_count = 0;
-
-            while (true)
+            while (loop)
             {
                 vvvf_wave.sin_time += 1.00 / div_freq;
                 vvvf_wave.saw_time += 1.00 / div_freq;
 
-                Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off,mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat );
+                Wave_Values wv_U = calculate_toei_6300_3(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                Wave_Values wv_V = calculate_toei_6300_3(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat );
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -64,90 +163,11 @@ namespace VVVF_Generator_Porting
                 }
                 sound_block_count++;
 
-                count++;
-                if (count % 60 == 0 && do_frequency_change && mascon_count == mascon_off_count)
-                {
-                    double sin_new_angle_freq = sin_angle_freq;
-                    if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
-                    else sin_new_angle_freq -= Math.PI / 500 * 1.5;
-                    double amp = sin_angle_freq / sin_new_angle_freq;
-                    sin_angle_freq = sin_new_angle_freq;
-                    sin_time = amp * sin_time;
-                }
-
-
-                
-
-                if (temp_count == 0)
-                {
-                    if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = true;
-                        temp_count++;
-                    }
-                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
-                else if(temp_count == 1)
-                {
-                    if (sin_angle_freq / 2 / Math.PI < 30 && brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = false;
-                        temp_count++;
-                    }
-                }
-                else if(temp_count == 2)
-                {
-                    if (sin_angle_freq / 2 / Math.PI > 45 && !brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
-
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = true;
-                        temp_count++;
-                    }
-                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
-                else
-                {
-                    if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
-               
-
-
-                if (!mason_off)
-                {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    if (++mascon_count > mascon_off_count) mascon_count = mascon_off_count;
-                }
-                else
-                {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    if (--mascon_count < 0) mascon_count = 0;
-                }
+                loop = check_for_freq_change();
 
             }
+
+            
 
             writer.Seek(4, SeekOrigin.Begin);
             writer.Write(sound_block_count + 36);
@@ -161,23 +181,14 @@ namespace VVVF_Generator_Porting
         //only works with windows
         static void generate_video(String output_path)
         {
-
+            reset_control_variables();
             reset_all_variables();
 
             DateTime dt = DateTime.Now;
             String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
-
-            Boolean do_frequency_change = true;
-            Boolean brake = false;
-
             bool temp = true;
-
             Int32 sound_block_count = 0;
 
-            double wave_stat = 0;
-            int mascon_count = mascon_off_count;
-            bool mason_off = false;
-            int temp_count = 0;
 
             
 
@@ -194,11 +205,9 @@ namespace VVVF_Generator_Porting
                 return;
             }
 
-            while (true)
+            Boolean loop = true;
+            while (loop)
             {
-                sin_time += 1.00 / div_freq;
-                saw_time += 1.00 / div_freq;
-
                 if (sound_block_count % movie_div == 0 && temp)
                 {
                     sin_time = 0;
@@ -217,8 +226,8 @@ namespace VVVF_Generator_Porting
                         sin_time += Math.PI / 50000.0;
                         saw_time += Math.PI / 50000.0;
 
-                        Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                        Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mason_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat);
+                        Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+                        Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat);
 
                         int voltage_stat = (int)(wv_U.pwm_value - wv_V.pwm_value);
                         points_U[i] = (int)wv_U.pwm_value;
@@ -247,9 +256,6 @@ namespace VVVF_Generator_Porting
 
                     vr.Write(mat);
 
-                    
-
-
                     g.Dispose();
                     image.Dispose();
 
@@ -262,81 +268,142 @@ namespace VVVF_Generator_Porting
 
                 sound_block_count++;
 
-                count++;
-                if (count % 60 == 0 && do_frequency_change && mascon_count == mascon_off_count)
-                {
-                    if (!brake) sin_angle_freq += Math.PI / 500 * 1.5;
-                    else sin_angle_freq -= Math.PI / 500 * 1.5;
-                }
+                loop = check_for_freq_change();
 
-                if (temp_count == 0)
-                {
-                    if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = true;
-                        temp_count++;
-                    }
-                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
-                else if (temp_count == 1)
-                {
-                    if (sin_angle_freq / 2 / Math.PI < 30 && brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = false;
-                        temp_count++;
-                    }
-                }
-                else if (temp_count == 2)
-                {
-                    if (sin_angle_freq / 2 / Math.PI > 45 && !brake && do_frequency_change)
-                    {
-                        do_frequency_change = false;
-                        mason_off = true;
+            }
 
-                        count = 0;
-                    }
-                    else if (count / div_freq > 2 && !do_frequency_change)
-                    {
-                        do_frequency_change = true;
-                        mason_off = false;
-                        brake = true;
-                        temp_count++;
-                    }
-                    else if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
-                else
-                {
-                    if (sin_angle_freq / 2 / Math.PI < 0 && brake && do_frequency_change) break;
-                }
+            vr.Release();
+            vr.Dispose();
+        }
 
 
-                if (!mason_off)
+        private static String get_Pulse_Name(Pulse_Mode mode)
+        {
+            if (mode == Pulse_Mode.Not_In_Sync)
+            {
+                double saw_freq = saw_angle_freq / Math.PI / 2.0;
+                return String.Format("{0:f2}", saw_freq).PadLeft(6);
+            }
+            if(mode == Pulse_Mode.P_Wide_3)
+                return "Wide 3 Pulse";
+
+            String[] mode_name_type = mode.ToString().Split("_");
+            String mode_name = "";
+            if (mode_name_type[0] == "SP") mode_name = "Shifted ";
+
+            mode_name += mode_name_type[1] + " Pulse";
+
+            return mode_name;
+        }
+        static void generate_status_video(String output_path)
+        {
+            reset_control_variables();
+            reset_all_variables();
+
+            DateTime dt = DateTime.Now;
+            String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
+
+            Int32 sound_block_count = 0;
+            Boolean temp = true;
+
+            int image_width = 500;
+            int image_height = 1000;
+            int movie_div = 3000;
+
+            String fileName = output_path + "\\" + gen_time + ".avi";
+            VideoWriter vr = new VideoWriter(fileName, OpenCvSharp.FourCC.H264, div_freq / movie_div, new OpenCvSharp.Size(image_width, image_height));
+
+            if (!vr.IsOpened())
+            {
+                return;
+            }
+
+            bool loop = true;
+            while (loop)
+            {
+                sin_time += 1.00 / div_freq;
+                saw_time += 1.00 / div_freq;
+
+                if (sound_block_count % movie_div == 0 && temp)
                 {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    if (++mascon_count > mascon_off_count) mascon_count = mascon_off_count;
+                    sin_time = 0;
+                    saw_time = 0;
+                    Bitmap image = new(image_width, image_height);
+                    Graphics g = Graphics.FromImage(image);
+                    g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
+                    
+
+                    calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+
+                    FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
+                    Font title_fnt = new Font(
+                       title_fontFamily,
+                       40,
+                       FontStyle.Regular,
+                       GraphicsUnit.Pixel);
+
+                    FontFamily val_fontFamily = new FontFamily("Arial Rounded MT Bold");
+                    Font val_fnt = new Font(
+                       val_fontFamily,
+                       50,
+                       FontStyle.Regular,
+                       GraphicsUnit.Pixel);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 0, image_width, 68 - 0);
+                    g.DrawString("Pulse Mode", title_fnt, Brushes.Black, 17, 13);
+                    g.FillRectangle(Brushes.Red, 0, 68, image_width, 8);
+                    g.DrawString(get_Pulse_Name(video_pulse_mode), val_fnt, Brushes.Black, 17, 100);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 226, image_width, 291 - 226);
+                    g.DrawString("Sine Freq[Hz]", title_fnt, Brushes.Black, 17, 236);
+                    g.FillRectangle(Brushes.Red, 0, 291, image_width, 8);
+                    double sine_freq = sin_angle_freq / Math.PI / 2;
+                    g.DrawString(String.Format("{0:f2}", sine_freq).PadLeft(6), val_fnt, Brushes.Black, 17, 323);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 447, image_width, 513 - 447);
+                    g.DrawString("Sine Amplitude[%]", title_fnt, Brushes.Black, 17, 457);
+                    g.FillRectangle(Brushes.Red, 0, 513, image_width, 8);
+                    g.DrawString(String.Format("{0:f2}", video_sine_amplitude*100).PadLeft(6), val_fnt, Brushes.Black, 17, 548);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(200,200,255)), 0, 669, image_width, 735- 669);
+                    g.DrawString("Freerun", title_fnt, Brushes.Black, 17, 679);
+                    g.FillRectangle(Brushes.Blue, 0, 735, image_width, 8);
+                    g.DrawString((mascon_off).ToString(), val_fnt, Brushes.Black, 17, 750);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 847, image_width, 913 - 847);
+                    g.DrawString("Brake", title_fnt, Brushes.Black, 17, 857);
+                    g.FillRectangle(Brushes.Blue, 0, 913, image_width, 8);
+                    g.DrawString(brake.ToString(), val_fnt, Brushes.Black, 17, 930);
+
+
+
+
+                    MemoryStream ms = new MemoryStream();
+                    image.Save(ms, ImageFormat.Png);
+                    byte[] img = ms.GetBuffer();
+                    Mat mat = OpenCvSharp.Mat.FromImageData(img);
+
+                    Cv2.ImShow("Wave Status View", mat);
+                    Cv2.WaitKey(1);
+
+                    vr.Write(mat);
+
+
+
+
+                    g.Dispose();
+                    image.Dispose();
+
+                    temp = false;
                 }
-                else
+                else if (sound_block_count % movie_div != 0)
                 {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    if (--mascon_count < 0) mascon_count = 0;
+                    temp = true;
                 }
 
+                sound_block_count++;
+
+                loop = check_for_freq_change();
             }
 
             vr.Release();
@@ -358,7 +425,8 @@ namespace VVVF_Generator_Porting
             DateTime startDt = DateTime.Now;
 
             generate_sound(output_path);
-            generate_video(output_path);
+            //generate_video(output_path);
+            generate_status_video(output_path);
 
             DateTime endDt = DateTime.Now;
 

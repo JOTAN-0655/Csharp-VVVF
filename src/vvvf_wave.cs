@@ -20,7 +20,7 @@ namespace VVVF_Generator_Porting
             public double sin_value;
 			public double saw_value;
 			public double pwm_value;
-        };
+		};
 
 		public enum Pulse_Mode
         {
@@ -146,6 +146,11 @@ namespace VVVF_Generator_Porting
 
 		public static int random_freq_move_count = 0;
 
+		//Video variables
+		//no need in RPI zero vvvf
+		public static Pulse_Mode video_pulse_mode = Pulse_Mode.P_1;
+		public static double video_sine_amplitude = 0.0;
+
 		public static void reset_all_variables()
 		{
 			sin_angle_freq = 0;
@@ -196,6 +201,10 @@ namespace VVVF_Generator_Porting
 
 		public static Wave_Values calculate_common(Pulse_Mode pulse_mode, double expect_saw_angle_freq, double initial_phase, double amplitude)
 		{
+			//variable change for video
+			//no need in RPI zero vvvf
+			video_pulse_mode = pulse_mode;
+			video_sine_amplitude = amplitude;
 
 			if (pulse_mode == Pulse_Mode.P_Wide_3)
 				return get_Wide_P_3(sin_time, sin_angle_freq, initial_phase, amplitude, false);
@@ -1383,7 +1392,7 @@ namespace VVVF_Generator_Porting
 				else
 				{
 					pulse_Mode = Pulse_Mode.Not_In_Sync;
-					expect_saw_angle_freq = M_2PI * get_pattern_random((int)(400 + 180 / 38.3 * wave_stat), 600, 30000);
+					expect_saw_angle_freq = M_2PI * get_pattern_random((int)(400 + 180 / 38.3 * wave_stat), 600, 20000);
 				}
 			}
 			else
@@ -1403,7 +1412,7 @@ namespace VVVF_Generator_Porting
 				else
 				{
 					pulse_Mode = Pulse_Mode.Not_In_Sync;
-					expect_saw_angle_freq = M_2PI * get_pattern_random((int)(400 + 180 / 34.0 * wave_stat), 600,30000);
+					expect_saw_angle_freq = M_2PI * get_pattern_random((int)(400 + 180 / 34.0 * wave_stat), 600,20000);
 				}
 			}
 
