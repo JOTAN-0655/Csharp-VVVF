@@ -613,10 +613,11 @@ namespace VVVF_Generator_Porting
                     };
                     Wave_Values wv_V = get_Calculated_Value(sound_name, cv_V);
 
-                    int voltage_stat = (int)(wv_U.pwm_value - wv_V.pwm_value);
-                    byte d = 0x40;
+                    double voltage_stat = wv_U.pwm_value - wv_V.pwm_value;
+                    byte d;
                     if (voltage_stat == 0) d = 0x80;
-                    else if (voltage_stat == 1) d = 0xC0;
+                    else if (voltage_stat > 0) d = 0xC0;
+                    else d = 0x40;
                     add[i] = d;
                 }
 
