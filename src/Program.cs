@@ -1,8 +1,14 @@
-﻿using OpenCvSharp;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using OpenCvSharp;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using static VVVF_Generator_Porting.vvvf_wave;
 
 namespace VVVF_Generator_Porting
@@ -498,32 +504,227 @@ namespace VVVF_Generator_Porting
             vr.Release();
             vr.Dispose();
         }
-        static void Main(string[] args)
+
+
+
+        private static void realtime_sound_calculate(BufferedWaveProvider provider,VVVF_Sound_Names sound_name)
+        {
+            while (true)
+            {
+                
+                
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo keyinfo = Console.ReadKey();
+                    ConsoleKey key = keyinfo.Key;
+                    if (key.Equals(ConsoleKey.B))
+                    {
+                        brake = !brake;
+                        Console.WriteLine("\r\n Brake : " + brake);
+
+                    }else if (key.Equals(ConsoleKey.W))
+                    {
+                        double old_freq = sin_angle_freq;
+                        double sin_new_angle_freq = sin_angle_freq;
+                        if (!brake) sin_new_angle_freq += Math.PI;
+                        else sin_new_angle_freq -= Math.PI;
+
+                        double amp = sin_angle_freq / sin_new_angle_freq;
+                        if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
+                        sin_angle_freq = sin_new_angle_freq;
+                        sin_time = amp * sin_time;
+                        wave_stat = sin_angle_freq / (Math.PI * 2);
+
+                        Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) /Math.PI/2);
+                    }else if (key.Equals(ConsoleKey.S))
+                    {
+                        double old_freq = sin_angle_freq;
+                        double sin_new_angle_freq = sin_angle_freq;
+                        if (!brake) sin_new_angle_freq += Math.PI / 2;
+                        else sin_new_angle_freq -= Math.PI / 2;
+
+                        double amp = sin_angle_freq / sin_new_angle_freq;
+                        if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
+                        sin_angle_freq = sin_new_angle_freq;
+                        sin_time = amp * sin_time;
+                        wave_stat = sin_angle_freq / (Math.PI * 2);
+
+                        Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) / Math.PI / 2);
+                    }else if (key.Equals(ConsoleKey.X))
+                    {
+                        double old_freq = sin_angle_freq;
+                        double sin_new_angle_freq = sin_angle_freq;
+                        if (!brake) sin_new_angle_freq += Math.PI / 4;
+                        else sin_new_angle_freq -= Math.PI / 4;
+
+                        double amp = sin_angle_freq / sin_new_angle_freq;
+                        if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
+                        sin_angle_freq = sin_new_angle_freq;
+                        sin_time = amp * sin_time;
+                        wave_stat = sin_angle_freq / (Math.PI * 2);
+
+                        Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) / Math.PI / 2);
+                    }
+                    
+                    else if (key.Equals(ConsoleKey.N))
+                    {
+                        mascon_off = !mascon_off;
+                        Console.WriteLine("\r\n Mascon : " + !mascon_off);
+                    }
+                    else if (key.Equals(ConsoleKey.Enter)) return;
+                }
+
+                if (!mascon_off)
+                {
+                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
+                    mascon_count += 40;
+                    if (mascon_count > mascon_off_count) mascon_count = mascon_off_count;
+                }
+                else
+                {
+                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
+                    mascon_count -= 40;
+                    if (mascon_count < 0) mascon_count = 0;
+                }
+
+                byte[] add = new byte[20];
+
+                for (int i = 0; i < 20; i++)
+                {
+                    sin_time += 1.0 / 192000.0;
+                    saw_time += 1.0 / 192000.0;
+
+                    Control_Values cv_U = new Control_Values
+                    {
+                        brake = brake,
+                        mascon_on = !mascon_off,
+                        free_run = mascon_count != mascon_off_count,
+                        initial_phase = Math.PI * 2.0 / 3.0 * 0,
+                        wave_stat = wave_stat
+                    };
+                    Wave_Values wv_U = get_Calculated_Value(sound_name, cv_U);
+                    Control_Values cv_V = new Control_Values
+                    {
+                        brake = brake,
+                        mascon_on = !mascon_off,
+                        free_run = mascon_count != mascon_off_count,
+                        initial_phase = Math.PI * 2.0 / 3.0 * 1,
+                        wave_stat = wave_stat
+                    };
+                    Wave_Values wv_V = get_Calculated_Value(sound_name, cv_V);
+
+                    int voltage_stat = (int)(wv_U.pwm_value - wv_V.pwm_value);
+                    byte d = 0x40;
+                    if (voltage_stat == 0) d = 0x80;
+                    else if (voltage_stat == 1) d = 0xC0;
+                    add[i] = d;
+                }
+
+
+                int bufsize = 20;
+
+                provider.AddSamples(add, 0, bufsize);
+                while (provider.BufferedBytes > 16000) ;
+            }
+        }
+        static void realtime_sound()
+        {
+            VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
+            Console.WriteLine("Select sound");
+            int enum_len = Enum.GetNames(typeof(VVVF_Sound_Names)).Length;
+            for (int i = 0; i < enum_len; i++)
+            {
+                Console.WriteLine(i.ToString() + " : " + (((VVVF_Sound_Names)i).ToString()));
+            }
+
+            while (true)
+            {
+                String val = Console.ReadLine();
+                int val_i = 0;
+                try
+                {
+                    val_i = Int32.Parse(val);
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid value.");
+                    continue;
+                }
+                if (enum_len <= val_i)
+                {
+                    Console.WriteLine("Invalid value.");
+                    continue;
+                }
+                else
+                {
+                    sound_name = (VVVF_Sound_Names)val_i;
+                    break;
+                }
+            }
+            Console.WriteLine(sound_name.ToString() + " was selected");
+
+            set_mascon_off_count(sound_name);
+            reset_control_variables();
+            reset_all_variables();
+
+            var bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(192000, 8, 1));
+            var mmDevice = new MMDeviceEnumerator()
+                .GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+
+            IWavePlayer wavPlayer = new WasapiOut(mmDevice, AudioClientShareMode.Shared, false, 50);
+
+            
+
+            wavPlayer.Init(bufferedWaveProvider);
+
+            wavPlayer.Play();
+
+            Console.WriteLine("Press ENTER to exit...");
+
+            realtime_sound_calculate(bufferedWaveProvider,sound_name);
+
+            wavPlayer.Stop();
+           
+
+        }
+
+        public static String get_Path()
         {
             String output_path = "";
-            while(output_path.Length == 0)
+            while (output_path.Length == 0)
             {
                 Console.Write("Enter the export path for vvvf sound : ");
                 output_path = Console.ReadLine();
-                if(output_path.Length == 0)
+                if (output_path.Length == 0)
                 {
                     Console.WriteLine("Error. Reenter a path.");
                 }
             }
+            return output_path;
+        }
+        static void Main(string[] args)
+        {
+            
 
             VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
 
             DateTime startDt = DateTime.Now;
 
-            generate_sound(output_path, sound_name);
+            //String output_path = get_Path();
+            //generate_sound(output_path, sound_name);
             //generate_video(output_path, sound_name);
             //generate_status_video(output_path, sound_name);
+            realtime_sound();
+
+
 
             DateTime endDt = DateTime.Now;
 
             TimeSpan ts = endDt - startDt;
 
             Console.WriteLine("Time took to generate vvvf sound : " + ts.TotalSeconds);
+            
+
         }
     }
 }
