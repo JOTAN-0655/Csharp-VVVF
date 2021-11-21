@@ -17,19 +17,19 @@ namespace VVVF_Generator_Porting
     {
         static double count = 0;
         static int div_freq = 192 * 1000;
-        static int mascon_off_count = 180000;
+        static int mascon_off_div = 180000;
 
         public static void set_mascon_off_count(VVVF_Sound_Names name)
         {
             switch (name) {
                 case VVVF_Sound_Names.Sound_E231:
-                    mascon_off_count = 180000;
+                    mascon_off_div = 12000;
                     break;
                 case VVVF_Sound_Names.Sound_E233_3000:
-                    mascon_off_count = 360000;
+                    mascon_off_div = 10000;
                     break;
                 default:
-                    mascon_off_count = 200000;
+                    mascon_off_div = 8000;
                     break;
 
             }
@@ -65,12 +65,50 @@ namespace VVVF_Generator_Porting
             return calculate_silent(cv);
         }
 
+        public static VVVF_Sound_Names get_Choosed_Sound()
+        {
+            VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
+            Console.WriteLine("Select sound");
+            int enum_len = Enum.GetNames(typeof(VVVF_Sound_Names)).Length;
+            for (int i = 0; i < enum_len; i++)
+            {
+                Console.WriteLine(i.ToString() + " : " + (((VVVF_Sound_Names)i).ToString()));
+            }
+
+            while (true)
+            {
+                String val = Console.ReadLine();
+                int val_i = 0;
+                try
+                {
+                    val_i = Int32.Parse(val);
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid value.");
+                    continue;
+                }
+                if (enum_len <= val_i)
+                {
+                    Console.WriteLine("Invalid value.");
+                    continue;
+                }
+                else
+                {
+                    sound_name = (VVVF_Sound_Names)val_i;
+                    break;
+                }
+            }
+            Console.WriteLine(sound_name.ToString() + " was selected");
+
+            return sound_name;
+        }
+
         // variables for controlling parameters
         static Boolean do_frequency_change = true;
         static Boolean brake = false;
 
         static double wave_stat = 0;
-        static int mascon_count = mascon_off_count;
         static bool mascon_off = false;
         static int temp_count = 0;
 
@@ -80,7 +118,6 @@ namespace VVVF_Generator_Porting
             brake = false;
 
             wave_stat = 0;
-            mascon_count = mascon_off_count;
             mascon_off = false;
             temp_count = 0;
         }
@@ -88,7 +125,7 @@ namespace VVVF_Generator_Porting
         static Boolean check_for_freq_change()
         {
             count++;
-            if (count % 60 == 0 && do_frequency_change && mascon_count == mascon_off_count)
+            if (count % 60 == 0 && do_frequency_change && sin_angle_freq / 2 / Math.PI == wave_stat)
             {
                 double sin_new_angle_freq = sin_angle_freq;
                 if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
@@ -156,13 +193,13 @@ namespace VVVF_Generator_Porting
 
             if (!mascon_off)
             {
-                wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                if (++mascon_count > mascon_off_count) mascon_count = mascon_off_count;
+                wave_stat += (Math.PI * 2) / (double)mascon_off_div;
+                if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
             }
             else
             {
-                wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                if (--mascon_count < 0) mascon_count = 0;
+                wave_stat -= (Math.PI * 2) / (double)mascon_off_div;
+                if (wave_stat < 0) wave_stat = 0;
             }
 
             return true;
@@ -209,7 +246,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = mascon_count != mascon_off_count,
+                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -219,7 +256,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = mascon_count != mascon_off_count,
+                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 1,
                     wave_stat = wave_stat
                 };
@@ -301,7 +338,7 @@ namespace VVVF_Generator_Porting
                         {
                             brake = brake,
                             mascon_on = !mascon_off,
-                            free_run = mascon_count != mascon_off_count,
+                            free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                             initial_phase = Math.PI * 2.0 / 3.0 * 0,
                             wave_stat = wave_stat
                         };
@@ -310,7 +347,7 @@ namespace VVVF_Generator_Porting
                         {
                             brake = brake,
                             mascon_on = !mascon_off,
-                            free_run = mascon_count != mascon_off_count,
+                            free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                             initial_phase = Math.PI * 2.0 / 3.0 * 1,
                             wave_stat = wave_stat
                         };
@@ -424,7 +461,7 @@ namespace VVVF_Generator_Porting
                     {
                         brake = brake,
                         mascon_on = !mascon_off,
-                        free_run = mascon_count != mascon_off_count,
+                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                         initial_phase = Math.PI * 2.0 / 3.0 * 0,
                         wave_stat = wave_stat
                     };
@@ -533,7 +570,7 @@ namespace VVVF_Generator_Porting
                         if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
                         sin_angle_freq = sin_new_angle_freq;
                         sin_time = amp * sin_time;
-                        wave_stat = sin_angle_freq / (Math.PI * 2);
+                        if (!mascon_off) wave_stat = sin_angle_freq / (Math.PI * 2);
 
                         Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) /Math.PI/2);
                     }else if (key.Equals(ConsoleKey.S))
@@ -547,7 +584,7 @@ namespace VVVF_Generator_Porting
                         if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
                         sin_angle_freq = sin_new_angle_freq;
                         sin_time = amp * sin_time;
-                        wave_stat = sin_angle_freq / (Math.PI * 2);
+                        if (!mascon_off) wave_stat = sin_angle_freq / (Math.PI * 2);
 
                         Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) / Math.PI / 2);
                     }else if (key.Equals(ConsoleKey.X))
@@ -561,7 +598,8 @@ namespace VVVF_Generator_Porting
                         if (sin_new_angle_freq < 0) sin_new_angle_freq = 0;
                         sin_angle_freq = sin_new_angle_freq;
                         sin_time = amp * sin_time;
-                        wave_stat = sin_angle_freq / (Math.PI * 2);
+                        
+                        if(!mascon_off) wave_stat = sin_angle_freq / (Math.PI * 2);
 
                         Console.WriteLine("\r\n CurrentFreq : " + (sin_angle_freq) / Math.PI / 2);
                     }
@@ -576,15 +614,13 @@ namespace VVVF_Generator_Porting
 
                 if (!mascon_off)
                 {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    mascon_count += 40;
-                    if (mascon_count > mascon_off_count) mascon_count = mascon_off_count;
+                    wave_stat += (Math.PI * 2) / (double)(mascon_off_div/20.0);
+                    if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
                 }
                 else
                 {
-                    wave_stat = sin_angle_freq / (Math.PI * 2) * mascon_count / (double)mascon_off_count;
-                    mascon_count -= 40;
-                    if (mascon_count < 0) mascon_count = 0;
+                    wave_stat -= (Math.PI * 2) / (double)(mascon_off_div / 20.0);
+                    if (wave_stat < 0) wave_stat = 0;
                 }
 
                 byte[] add = new byte[20];
@@ -598,7 +634,7 @@ namespace VVVF_Generator_Porting
                     {
                         brake = brake,
                         mascon_on = !mascon_off,
-                        free_run = mascon_count != mascon_off_count,
+                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                         initial_phase = Math.PI * 2.0 / 3.0 * 0,
                         wave_stat = wave_stat
                     };
@@ -607,7 +643,7 @@ namespace VVVF_Generator_Porting
                     {
                         brake = brake,
                         mascon_on = !mascon_off,
-                        free_run = mascon_count != mascon_off_count,
+                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
                         initial_phase = Math.PI * 2.0 / 3.0 * 1,
                         wave_stat = wave_stat
                     };
@@ -628,42 +664,9 @@ namespace VVVF_Generator_Porting
                 while (provider.BufferedBytes > 16000) ;
             }
         }
-        static void realtime_sound()
+        static void realtime_sound(VVVF_Sound_Names sound_name)
         {
-            VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
-            Console.WriteLine("Select sound");
-            int enum_len = Enum.GetNames(typeof(VVVF_Sound_Names)).Length;
-            for (int i = 0; i < enum_len; i++)
-            {
-                Console.WriteLine(i.ToString() + " : " + (((VVVF_Sound_Names)i).ToString()));
-            }
-
-            while (true)
-            {
-                String val = Console.ReadLine();
-                int val_i = 0;
-                try
-                {
-                    val_i = Int32.Parse(val);
-                }
-                catch
-                {
-                    Console.WriteLine("Invalid value.");
-                    continue;
-                }
-                if (enum_len <= val_i)
-                {
-                    Console.WriteLine("Invalid value.");
-                    continue;
-                }
-                else
-                {
-                    sound_name = (VVVF_Sound_Names)val_i;
-                    break;
-                }
-            }
-            Console.WriteLine(sound_name.ToString() + " was selected");
-
+            
             set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
@@ -705,17 +708,14 @@ namespace VVVF_Generator_Porting
         }
         static void Main(string[] args)
         {
-            
-
-            VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
-
             DateTime startDt = DateTime.Now;
 
+            VVVF_Sound_Names sound_name = get_Choosed_Sound();
             //String output_path = get_Path();
             //generate_sound(output_path, sound_name);
             //generate_video(output_path, sound_name);
             //generate_status_video(output_path, sound_name);
-            realtime_sound();
+            realtime_sound(sound_name);
 
 
 
