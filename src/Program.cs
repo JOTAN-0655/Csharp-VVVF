@@ -11,7 +11,53 @@ namespace VVVF_Generator_Porting
     {
         static double count = 0;
         static int div_freq = 192 * 1000;
-        static int mascon_off_count = 120000;
+        static int mascon_off_count = 180000;
+
+        public static void set_mascon_off_count(VVVF_Sound_Names name)
+        {
+            switch (name) {
+                case VVVF_Sound_Names.Sound_E231:
+                    mascon_off_count = 180000;
+                    break;
+                case VVVF_Sound_Names.Sound_E233_3000:
+                    mascon_off_count = 360000;
+                    break;
+                default:
+                    mascon_off_count = 200000;
+                    break;
+
+            }
+        }
+
+        public static Wave_Values get_Calculated_Value(VVVF_Sound_Names name, Control_Values cv)
+        {
+            if (name == VVVF_Sound_Names.Sound_207) return calculate_207(cv);
+            if (name == VVVF_Sound_Names.Sound_207_1000_update) return calculate_207_1000_update(cv);
+            if (name == VVVF_Sound_Names.Sound_225_5100_mitsubishi) return calculate_225_5100_mitsubishi(cv);
+            if (name == VVVF_Sound_Names.Sound_321_hitachi) return calculate_321_hitachi(cv);
+            if (name == VVVF_Sound_Names.Sound_9820_hitachi) return calculate_9820_hitachi(cv);
+            if (name == VVVF_Sound_Names.Sound_9820_mitsubishi) return calculate_9820_mitsubishi(cv);
+            if (name == VVVF_Sound_Names.Sound_doremi) return calculate_doremi(cv);
+            if (name == VVVF_Sound_Names.Sound_E209) return calculate_E209(cv);
+            if (name == VVVF_Sound_Names.Sound_E231) return calculate_E231(cv);
+            if (name == VVVF_Sound_Names.Sound_E233) return calculate_E233(cv);
+            if (name == VVVF_Sound_Names.Sound_E233_3000) return calculate_E233_3000(cv);
+            if (name == VVVF_Sound_Names.Sound_E235) return calculate_E235(cv);
+            if (name == VVVF_Sound_Names.Sound_Famima) return calculate_Famima(cv);
+            if (name == VVVF_Sound_Names.Sound_keihan_13000_toyo_IGBT) return calculate_keihan_13000_toyo_IGBT(cv);
+            if (name == VVVF_Sound_Names.Sound_keio_8000_gto) return calculate_keio_8000_gto(cv);
+            if (name == VVVF_Sound_Names.Sound_mitsubishi_gto) return calculate_mitsubishi_gto(cv);
+            if (name == VVVF_Sound_Names.Sound_real_doremi) return calculate_real_doremi(cv);
+            if (name == VVVF_Sound_Names.Sound_toei_6300_3) return calculate_toei_6300_3(cv);
+            if (name == VVVF_Sound_Names.Sound_tokyuu_1000_1500_IGBT) return calculate_tokyuu_1000_1500_IGBT(cv);
+            if (name == VVVF_Sound_Names.Sound_tokyuu_5000) return calculate_tokyuu_5000(cv);
+            if (name == VVVF_Sound_Names.Sound_tokyu_9000_hitachi_gto) return calculate_tokyu_9000_hitachi_gto(cv);
+            if (name == VVVF_Sound_Names.Sound_toubu_50050) return calculate_toubu_50050(cv);
+            if (name == VVVF_Sound_Names.Sound_toyo_GTO) return calculate_toyo_GTO(cv);
+            if (name == VVVF_Sound_Names.Sound_toyo_IGBT) return calculate_toyo_IGBT(cv);
+
+            return calculate_silent(cv);
+        }
 
         // variables for controlling parameters
         static Boolean do_frequency_change = true;
@@ -116,8 +162,9 @@ namespace VVVF_Generator_Porting
             return true;
         }
 
-        static void generate_sound(String output_path)
+        static void generate_sound(String output_path,VVVF_Sound_Names sound_name)
         {
+            set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
 
@@ -152,8 +199,25 @@ namespace VVVF_Generator_Porting
                 vvvf_wave.sin_time += 1.00 / div_freq;
                 vvvf_wave.saw_time += 1.00 / div_freq;
 
-                Wave_Values wv_U = calculate_toei_6300_3(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                Wave_Values wv_V = calculate_toei_6300_3(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat );
+                Control_Values cv_U = new Control_Values
+                {
+                    brake = brake,
+                    mascon_on = !mascon_off,
+                    free_run = mascon_count != mascon_off_count,
+                    initial_phase = Math.PI * 2.0 / 3.0 * 0,
+                    wave_stat = wave_stat
+                };
+                Wave_Values wv_U = get_Calculated_Value(sound_name, cv_U);
+
+                Control_Values cv_V = new Control_Values
+                {
+                    brake = brake,
+                    mascon_on = !mascon_off,
+                    free_run = mascon_count != mascon_off_count,
+                    initial_phase = Math.PI * 2.0 / 3.0 * 1,
+                    wave_stat = wave_stat
+                };
+                Wave_Values wv_V = get_Calculated_Value(sound_name, cv_V);
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -179,8 +243,9 @@ namespace VVVF_Generator_Porting
         }
 
         //only works with windows
-        static void generate_video(String output_path)
+        static void generate_video(String output_path,VVVF_Sound_Names sound_name)
         {
+            set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
 
@@ -223,12 +288,28 @@ namespace VVVF_Generator_Porting
 
                     for (int i = 0; i < image_width; i++)
                     {
-                        sin_time += Math.PI / 50000.0;
-                        saw_time += Math.PI / 50000.0;
+                        sin_time += Math.PI / 500000.0;
+                        saw_time += Math.PI / 500000.0;
 
-                        Wave_Values wv_U = calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
-                        Wave_Values wv_V = calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 1, wave_stat);
-
+                        Control_Values cv_U = new Control_Values
+                        {
+                            brake = brake,
+                            mascon_on = !mascon_off,
+                            free_run = mascon_count != mascon_off_count,
+                            initial_phase = Math.PI * 2.0 / 3.0 * 0,
+                            wave_stat = wave_stat
+                        };
+                        Wave_Values wv_U = get_Calculated_Value(sound_name, cv_U);
+                        Control_Values cv_V = new Control_Values
+                        {
+                            brake = brake,
+                            mascon_on = !mascon_off,
+                            free_run = mascon_count != mascon_off_count,
+                            initial_phase = Math.PI * 2.0 / 3.0 * 1,
+                            wave_stat = wave_stat
+                        };
+                        Wave_Values wv_V = get_Calculated_Value(sound_name, cv_V);
+                        
                         int voltage_stat = (int)(wv_U.pwm_value - wv_V.pwm_value);
                         points_U[i] = (int)wv_U.pwm_value;
                         points_V[i] = (int)wv_V.pwm_value;
@@ -282,7 +363,7 @@ namespace VVVF_Generator_Porting
             if (mode == Pulse_Mode.Not_In_Sync)
             {
                 double saw_freq = saw_angle_freq / Math.PI / 2.0;
-                return String.Format("{0:f2}", saw_freq).PadLeft(6);
+                return String.Format("Async - {0:f2}", saw_freq).PadLeft(6);
             }
             if(mode == Pulse_Mode.P_Wide_3)
                 return "Wide 3 Pulse";
@@ -295,7 +376,7 @@ namespace VVVF_Generator_Porting
 
             return mode_name;
         }
-        static void generate_status_video(String output_path)
+        static void generate_status_video(String output_path,VVVF_Sound_Names sound_name)
         {
             reset_control_variables();
             reset_all_variables();
@@ -307,7 +388,7 @@ namespace VVVF_Generator_Porting
             Boolean temp = true;
 
             int image_width = 500;
-            int image_height = 1000;
+            int image_height = 1080;
             int movie_div = 3000;
 
             String fileName = output_path + "\\" + gen_time + ".avi";
@@ -331,9 +412,17 @@ namespace VVVF_Generator_Porting
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
                     g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
-                    
 
-                    calculate_tokyuu_1000_1500_IGBT(brake, !mascon_off, mascon_count != mascon_off_count, Math.PI * 2.0 / 3.0 * 0, wave_stat);
+
+                    Control_Values cv_U = new Control_Values
+                    {
+                        brake = brake,
+                        mascon_on = !mascon_off,
+                        free_run = mascon_count != mascon_off_count,
+                        initial_phase = Math.PI * 2.0 / 3.0 * 0,
+                        wave_stat = wave_stat
+                    };
+                    Wave_Values wv_U = get_Calculated_Value(sound_name, cv_U);
 
                     FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
                     Font title_fnt = new Font(
@@ -422,11 +511,13 @@ namespace VVVF_Generator_Porting
                 }
             }
 
+            VVVF_Sound_Names sound_name = VVVF_Sound_Names.Sound_E231;
+
             DateTime startDt = DateTime.Now;
 
-            generate_sound(output_path);
-            //generate_video(output_path);
-            generate_status_video(output_path);
+            generate_sound(output_path, sound_name);
+            //generate_video(output_path, sound_name);
+            //generate_status_video(output_path, sound_name);
 
             DateTime endDt = DateTime.Now;
 
