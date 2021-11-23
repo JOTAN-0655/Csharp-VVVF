@@ -1,4 +1,4 @@
-# Csharp-VVVF
+# Test of Csharp-VVVF
 Generating vvvf sound on PC using C#
 
 # Usage
@@ -7,7 +7,7 @@ C# console app on VisualStudio.
 # Output
 ## Audio
 This application will output a sound wave form in wav extension.<br>
-Default is 100 kHz sampling data.<br>
+Default is 192 kHz sampling data.<br>
 
 ## Video
 This application will output a wave form view video in avi extention.<br>
