@@ -9,17 +9,19 @@ namespace VVVF_Generator_Porting
     public class vvvf_wave
     {
 
-		static double M_2PI = 6.28318530717958;
-        static double M_PI = 3.14159265358979;
-		static double M_PI_2 = 1.57079632679489661923;
-		static double M_2_PI = 0.636619772367581343076;
+		static double M_2PI = 6.283185307179586476925286766559;
+		static double M_PI = 3.1415926535897932384626433832795;
+		static double M_PI_2 = 1.5707963267948966192313216916398;
+		static double M_2_PI = 0.63661977236758134307553505349006;
+		static double M_1_PI = 0.31830988618379067153776752674503;
+		static double M_1_2PI = 0.15915494309189533576888376337251;
 
-        public struct Wave_Values
+		public struct Wave_Values
         {
 
             public double sin_value;
 			public double saw_value;
-			public double pwm_value;
+			public int pwm_value;
         };
 
         public struct Control_Values {
@@ -49,14 +51,14 @@ namespace VVVF_Generator_Porting
 			Sound_E233, Sound_silent, Sound_mitsubishi_gto, Sound_toyo_IGBT, Sound_Famima, Sound_real_doremi, Sound_toubu_50050,
 			Sound_207_1000_update, Sound_225_5100_mitsubishi, Sound_321_hitachi, Sound_toyo_GTO, Sound_keihan_13000_toyo_IGBT,
 			Sound_toei_6300_3, Sound_tokyu_9000_hitachi_gto, Sound_tokyuu_5000, Sound_keio_8000_gto, Sound_tokyuu_1000_1500_IGBT,
-			Sound_E233_3000, Sound_jre_209_mitsubishi_gto
+			Sound_E233_3000, Sound_jre_209_mitsubishi_gto, Sound_E231_3_level
 		}
 
 
         //function caliculation
         public static double get_saw_value_simple(double x)
 		{
-			double fixed_x = x - (double)((int)(x / M_2PI) * M_2PI);
+			double fixed_x = x - (double)((int)(x * M_1_2PI) * M_2PI);
 			if (0 <= fixed_x && fixed_x < M_PI_2)
 				return M_2_PI * fixed_x;
 			else if (M_PI_2 <= fixed_x && fixed_x < 3.0 * M_PI_2)
@@ -75,12 +77,12 @@ namespace VVVF_Generator_Porting
 			return my_math.sin(time * angle_frequency + initial_phase) * amplitude;
 		}
 
-		public static double get_pwm_value(double sin_value, double saw_value)
+		public static int get_pwm_value(double sin_value, double saw_value)
 		{
 			if (sin_value - saw_value > 0)
 				return 1;
 			else
-				return -1;
+				return 0;
 		}
 
 		public static Wave_Values get_Wide_P_3(double time, double angle_frequency, double initial_phase, double voltage, bool saw_oppose)
@@ -91,7 +93,7 @@ namespace VVVF_Generator_Porting
 				saw = -saw;
 			double pwm = ((sin - saw > 0) ? 1 : -1) * voltage;
 			double nega_saw = (saw > 0) ? saw - 1 : saw + 1;
-			double gate = get_pwm_value(pwm, nega_saw);
+			int gate = get_pwm_value(pwm, nega_saw) * 2;
 			Wave_Values wv = new Wave_Values();
 			wv.sin_value = pwm;
 			wv.saw_value = nega_saw;
@@ -106,7 +108,7 @@ namespace VVVF_Generator_Porting
 			if (saw_oppose)
 				saw = -saw;
 			double pwm = (saw > 0) ? voltage : -voltage;
-			double gate = get_pwm_value(pwm, carrier_saw);
+			int gate = get_pwm_value(pwm, carrier_saw) * 2;
 			Wave_Values wv;
 			wv.sin_value = saw;
 			wv.saw_value = carrier_saw;
@@ -217,7 +219,7 @@ namespace VVVF_Generator_Porting
 			return random_freq;
 		}
 
-		public static Wave_Values calculate_three_level(Pulse_Mode pulse_mode, double expect_saw_angle_freq, double initial_phase, double amplitude)
+		public static Wave_Values calculate_three_level(Pulse_Mode pulse_mode, double expect_saw_angle_freq, double initial_phase, double amplitude,bool dipolar)
 		{
 			//variable change for video
 			//no need in RPI zero vvvf
@@ -239,8 +241,8 @@ namespace VVVF_Generator_Porting
 			if ((int)pulse_mode > (int)Pulse_Mode.P_61)
 				saw_value = -saw_value;
 
-			double changed_saw = 0.5 * saw_value;
-			double pwm_value = 0.25 * (get_pwm_value(sin_value, changed_saw + 0.5) + get_pwm_value(sin_value, changed_saw - 0.5));
+			double changed_saw = ((dipolar) ? 2 : 0.5) * saw_value;
+			int pwm_value = get_pwm_value(sin_value, changed_saw + 0.5) + get_pwm_value(sin_value, changed_saw - 0.5);
 
 			Wave_Values wv;
 			wv.sin_value = sin_value;
@@ -248,6 +250,7 @@ namespace VVVF_Generator_Porting
 			wv.pwm_value = pwm_value;
 			return wv;
 		}
+
 		public static Wave_Values calculate_common(Pulse_Mode pulse_mode, double expect_saw_angle_freq, double initial_phase, double amplitude)
 		{
 			//variable change for video
@@ -287,7 +290,8 @@ namespace VVVF_Generator_Porting
 			if ((int)pulse_mode > (int)Pulse_Mode.P_61)
 				saw_value = -saw_value;
 
-			double pwm_value = get_pwm_value(sin_value, saw_value);
+			int pwm_value = get_pwm_value(sin_value, saw_value)*2;
+			//Console.WriteLine(pwm_value);
 
 			Wave_Values wv;
 			wv.sin_value = sin_value;
@@ -444,7 +448,7 @@ namespace VVVF_Generator_Porting
 			double amplitude = get_Amplitude(cv.wave_stat, 54);
 
 			double sin_value = get_sin_value(sin_time, sin_angle_freq, cv.initial_phase, amplitude);
-			double saw_value, pwm_value;
+			double saw_value;
 			if (cv.wave_stat > 54)
 			{
 
@@ -479,7 +483,7 @@ namespace VVVF_Generator_Porting
 					random_freq_move_count = 0;
 			}
 
-			pwm_value = get_pwm_value(sin_value, saw_value);
+			int pwm_value = get_pwm_value(sin_value, saw_value);
 
 			Wave_Values wv;
 			wv.sin_value = sin_value;
@@ -1605,7 +1609,83 @@ namespace VVVF_Generator_Porting
 					expect_saw_angle_freq = M_2PI * 114;
 				}
 			}
-			return calculate_three_level(pulse_Mode, expect_saw_angle_freq, cv.initial_phase, amplitude);
+			return calculate_three_level(pulse_Mode, expect_saw_angle_freq, cv.initial_phase, amplitude,false);
+		}
+
+		public static Wave_Values calculate_E231_3_level(Control_Values cv)
+		{
+			double amplitude = 0;
+			double expect_saw_angle_freq = 1;
+			Pulse_Mode pulse_Mode = Pulse_Mode.P_1;
+			bool dipolar = false;
+			if (cv.brake)
+			{
+				amplitude = get_Amplitude(cv.wave_stat, 68);
+
+				if(cv.wave_stat > 68)
+                {
+					amplitude += get_Amplitude(cv.wave_stat - 68, 5) * 4;
+				}
+
+				if (59 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 59 * M_2PI)) 
+					pulse_Mode = Pulse_Mode.P_1;
+				else if (50 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 50 * M_2PI))
+					pulse_Mode = Pulse_Mode.P_3;
+				else if (40 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 40 * M_2PI))
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					expect_saw_angle_freq = M_2PI * get_random_freq(1000, 20); ;
+				}
+				else if (4 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 4 * M_2PI))
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					double expect_freq = 169 + (1000 - 169) / 36.0 * (cv.wave_stat - 4);
+					expect_saw_angle_freq = M_2PI * get_random_freq((int)expect_freq, 20); ;
+				}
+				else
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					expect_saw_angle_freq = M_2PI * get_random_freq(169, 20); ;
+				}
+			}
+			else
+			{
+				amplitude = get_Amplitude(cv.wave_stat, 60);
+				if (cv.wave_stat > 51)
+				{
+					amplitude = get_Amplitude(51, 60) + get_Amplitude(cv.wave_stat - 51, 10) * 4;
+				}
+
+				if (51 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 51 * M_2PI))
+					pulse_Mode = Pulse_Mode.P_1;
+				else if (39 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 39 * M_2PI))
+					pulse_Mode = Pulse_Mode.P_3;
+				else if (35 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 35 * M_2PI))
+                {
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					expect_saw_angle_freq = M_2PI * get_random_freq(880, 100);
+				}
+				else if (14 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 14 * M_2PI))
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					double expect_freq = 460 + (880 - 460) / 21.0 * (cv.wave_stat - 14);
+					expect_saw_angle_freq = M_2PI * get_random_freq((int)expect_freq,100);
+				}
+				else if (2 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 2 * M_2PI))
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					double expect_freq = 198 + (460 - 198) / 12.0 * (cv.wave_stat - 2);
+					expect_saw_angle_freq = M_2PI * get_random_freq((int)expect_freq,100);
+					dipolar = true;
+				}
+				else
+				{
+					pulse_Mode = Pulse_Mode.Not_In_Sync;
+					expect_saw_angle_freq = M_2PI * get_random_freq(198,100);
+					dipolar = true;
+				}
+			}
+			return calculate_three_level(pulse_Mode, expect_saw_angle_freq, cv.initial_phase, amplitude, dipolar);
 		}
 	}
 }

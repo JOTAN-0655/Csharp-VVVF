@@ -9,10 +9,12 @@ namespace VVVF_Generator_Porting
     public class my_math
     {
 
-        static double M_2PI = 6.28318530717958;
-        static double M_PI = 3.14159265358979;
-        static double M_PI_2 = 1.57079632679489661923;
-        static double M_2_PI = 0.636619772367581343076;
+        static double M_2PI = 6.283185307179586476925286766559;
+        static double M_PI = 3.1415926535897932384626433832795;
+        static double M_PI_2 = 1.5707963267948966192313216916398;
+        static double M_2_PI = 0.63661977236758134307553505349006;
+        static double M_1_PI = 0.31830988618379067153776752674503;
+        static double M_1_2PI = 0.15915494309189533576888376337251;
 
         static int sin_table_size = 2000;
         static double[] sin_table = new double[]{0.0000000000000000,
@@ -75,11 +77,11 @@ namespace VVVF_Generator_Porting
         {
             long cycles = 0;
             if (radian > M_PI)
-                cycles = (long)(radian / M_PI);
+                cycles = (long)(radian * M_1_PI);
             double pi_radian = radian - (double)cycles * M_PI;
             int loc = (int)round((double)pi_radian * 636.3014624813976);
             double val = sin_table[loc];
-            if (cycles % 2 != 0)
+            if ((cycles & 0x01) == 1)
                 val = -(double)val;
             return val;
         }

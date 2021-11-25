@@ -15,9 +15,18 @@ namespace VVVF_Generator_Porting
 {
     internal class Program
     {
+        static double M_2PI = 6.283185307179586476925286766559;
+        static double M_PI = 3.1415926535897932384626433832795;
+        static double M_PI_2 = 1.5707963267948966192313216916398;
+        static double M_2_PI = 0.63661977236758134307553505349006;
+        static double M_1_PI = 0.31830988618379067153776752674503;
+        static double M_1_2PI = 0.15915494309189533576888376337251;
+
         static double count = 0;
         static int div_freq = 192 * 1000;
         static int mascon_off_div = 180000;
+
+
 
         public static void set_mascon_off_count(VVVF_Sound_Names name)
         {
@@ -29,7 +38,7 @@ namespace VVVF_Generator_Porting
                     mascon_off_div = 10000;
                     break;
                 default:
-                    mascon_off_div = 8000;
+                    mascon_off_div = 20000;
                     break;
 
             }
@@ -62,6 +71,7 @@ namespace VVVF_Generator_Porting
             if (name == VVVF_Sound_Names.Sound_toyo_GTO) return calculate_toyo_GTO(cv);
             if (name == VVVF_Sound_Names.Sound_toyo_IGBT) return calculate_toyo_IGBT(cv);
             if (name == VVVF_Sound_Names.Sound_jre_209_mitsubishi_gto) return calculate_jre_209_mitsubishi_gto(cv);
+            if (name == VVVF_Sound_Names.Sound_E231_3_level) return calculate_E231_3_level(cv);
 
             return calculate_silent(cv);
         }
@@ -126,7 +136,7 @@ namespace VVVF_Generator_Porting
         static Boolean check_for_freq_change()
         {
             count++;
-            if (count % 60 == 0 && do_frequency_change && sin_angle_freq / 2 / Math.PI == wave_stat)
+            if (count % 60 == 0 && do_frequency_change && sin_angle_freq / Math.PI / 2.0 == wave_stat)
             {
                 double sin_new_angle_freq = sin_angle_freq;
                 if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
@@ -195,7 +205,7 @@ namespace VVVF_Generator_Porting
             if (!mascon_off)
             {
                 wave_stat += (Math.PI * 2) / (double)mascon_off_div;
-                if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
+                if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2.0);
             }
             else
             {
@@ -247,7 +257,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -257,7 +267,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 1,
                     wave_stat = wave_stat
                 };
@@ -267,10 +277,10 @@ namespace VVVF_Generator_Porting
                 {
                     double pwm_value = wv_U.pwm_value - wv_V.pwm_value;
                     byte sound_byte = 0x80;
-                    if (pwm_value > 0.6) sound_byte = 0xB0;
-                    else if (0.6 > pwm_value && pwm_value > 0.2) sound_byte = 0x98;
-                    else if (-0.6 < pwm_value && pwm_value < -0.2) sound_byte = 0x68;
-                    else if (wv_U.pwm_value - wv_V.pwm_value < -0.6) sound_byte = 0x50;
+                    if (pwm_value == 2) sound_byte = 0xB0;
+                    else if (pwm_value == 1) sound_byte = 0x98;
+                    else if (pwm_value == -1) sound_byte = 0x68;
+                    else if (pwm_value == -2) sound_byte = 0x50;
                     writer.Write(sound_byte);
                 }
                 sound_block_count++;
@@ -308,7 +318,7 @@ namespace VVVF_Generator_Porting
             int image_width = 2000;
             int image_height = 500;
             int movie_div = 3000;
-            int wave_height = 100;
+            int wave_height = 50;
 
             String fileName = output_path + "\\" + gen_time + ".avi";
             VideoWriter vr = new VideoWriter(fileName, OpenCvSharp.FourCC.H264, div_freq / movie_div, new OpenCvSharp.Size(image_width, image_height));
@@ -653,10 +663,11 @@ namespace VVVF_Generator_Porting
 
                     double pwm_value = wv_U.pwm_value - wv_V.pwm_value;
                     byte sound_byte = 0x80;
-                    if (pwm_value > 0.6) sound_byte = 0xB0;
-                    else if (0.6 > pwm_value && pwm_value > 0.2) sound_byte = 0x98;
-                    else if (-0.6 < pwm_value && pwm_value < -0.2) sound_byte = 0x68;
-                    else if (wv_U.pwm_value - wv_V.pwm_value < -0.6) sound_byte = 0x50;
+
+                    if (pwm_value == 2) sound_byte = 0xB0;
+                    else if (pwm_value == 1) sound_byte = 0x98;
+                    else if (pwm_value == -1) sound_byte = 0x68;
+                    else if (pwm_value == -2) sound_byte = 0x50;
 
                     /*
                     if (voltage_stat == 0) d = 0x80;
@@ -722,7 +733,7 @@ namespace VVVF_Generator_Porting
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
             String output_path = get_Path();
             generate_sound(output_path, sound_name);
-            generate_video(output_path, sound_name);
+            //generate_video(output_path, sound_name);
             //generate_status_video(output_path, sound_name);
             //realtime_sound(sound_name);
 
