@@ -1621,10 +1621,11 @@ namespace VVVF_Generator_Porting
 			if (cv.brake)
 			{
 				amplitude = get_Amplitude(cv.wave_stat, 68);
+				if (cv.wave_stat > 59)
+				{
+					if (cv.wave_stat > 71) amplitude = 3;
+					else amplitude = 3 + (0.6 - 3) / 12.0 * (59 - cv.wave_stat);
 
-				if(cv.wave_stat > 68)
-                {
-					amplitude += get_Amplitude(cv.wave_stat - 68, 5) * 4;
 				}
 
 				if (59 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 59 * M_2PI)) 
@@ -1651,13 +1652,17 @@ namespace VVVF_Generator_Porting
 			else
 			{
 				amplitude = get_Amplitude(cv.wave_stat, 60);
-				if (cv.wave_stat > 51)
-				{
-					amplitude = get_Amplitude(51, 60) + get_Amplitude(cv.wave_stat - 51, 10) * 4;
-				}
 
 				if (51 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 51 * M_2PI))
+                {
+					if (cv.wave_stat > 61) amplitude = 3;
+					else
+					{
+						amplitude = get_Amplitude(cv.wave_stat, 85);
+					}
 					pulse_Mode = Pulse_Mode.P_1;
+				}
+					
 				else if (39 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 39 * M_2PI))
 					pulse_Mode = Pulse_Mode.P_3;
 				else if (35 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 35 * M_2PI))

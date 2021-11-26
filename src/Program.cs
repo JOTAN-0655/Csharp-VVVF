@@ -331,6 +331,8 @@ namespace VVVF_Generator_Porting
             Boolean loop = true;
             while (loop)
             {
+                
+
                 if (sound_block_count % movie_div == 0 && temp)
                 {
                     sin_time = 0;
@@ -346,8 +348,8 @@ namespace VVVF_Generator_Porting
 
                     for (int i = 0; i < image_width; i++)
                     {
-                        sin_time += Math.PI / 500000.0;
-                        saw_time += Math.PI / 500000.0;
+                        sin_time += Math.PI / 250000.0;
+                        saw_time += Math.PI / 250000.0;
 
                         Control_Values cv_U = new Control_Values
                         {
@@ -421,7 +423,8 @@ namespace VVVF_Generator_Porting
             if (mode == Pulse_Mode.Not_In_Sync)
             {
                 double saw_freq = saw_angle_freq / Math.PI / 2.0;
-                return String.Format("Async - {0:f2}", saw_freq).PadLeft(6);
+                Console.WriteLine(saw_angle_freq);
+                return String.Format("Async - " + saw_freq.ToString("F2")).PadLeft(6);
             }
             if(mode == Pulse_Mode.P_Wide_3)
                 return "Wide 3 Pulse";
@@ -460,8 +463,15 @@ namespace VVVF_Generator_Porting
             bool loop = true;
             while (loop)
             {
-                sin_time += 1.00 / div_freq;
-                saw_time += 1.00 / div_freq;
+                Control_Values cv_U = new Control_Values
+                {
+                    brake = brake,
+                    mascon_on = !mascon_off,
+                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                    initial_phase = Math.PI * 2.0 / 3.0 * 0,
+                    wave_stat = wave_stat
+                };
+                get_Calculated_Value(sound_name, cv_U);
 
                 if (sound_block_count % movie_div == 0 && temp)
                 {
@@ -470,17 +480,6 @@ namespace VVVF_Generator_Porting
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
                     g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
-
-
-                    Control_Values cv_U = new Control_Values
-                    {
-                        brake = brake,
-                        mascon_on = !mascon_off,
-                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
-                        initial_phase = Math.PI * 2.0 / 3.0 * 0,
-                        wave_stat = wave_stat
-                    };
-                    Wave_Values wv_U = get_Calculated_Value(sound_name, cv_U);
 
                     FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
                     Font title_fnt = new Font(
@@ -733,8 +732,8 @@ namespace VVVF_Generator_Porting
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
             String output_path = get_Path();
             generate_sound(output_path, sound_name);
-            //generate_video(output_path, sound_name);
-            //generate_status_video(output_path, sound_name);
+            generate_video(output_path, sound_name);
+            generate_status_video(output_path, sound_name);
             //realtime_sound(sound_name);
 
 
