@@ -4,6 +4,7 @@ using NAudio.Wave.SampleProviders;
 using OpenCvSharp;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -24,25 +25,8 @@ namespace VVVF_Generator_Porting
 
         static double count = 0;
         static int div_freq = 192 * 1000;
-        static int mascon_off_div = 180000;
+        public static int mascon_off_div = 180000;
 
-
-
-        public static void set_mascon_off_count(VVVF_Sound_Names name)
-        {
-            switch (name) {
-                case VVVF_Sound_Names.Sound_E231:
-                    mascon_off_div = 12000;
-                    break;
-                case VVVF_Sound_Names.Sound_E233_3000:
-                    mascon_off_div = 10000;
-                    break;
-                default:
-                    mascon_off_div = 20000;
-                    break;
-
-            }
-        }
 
         public static Wave_Values get_Calculated_Value(VVVF_Sound_Names name, Control_Values cv)
         {
@@ -218,7 +202,6 @@ namespace VVVF_Generator_Porting
 
         static void generate_sound(String output_path,VVVF_Sound_Names sound_name)
         {
-            set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
 
@@ -257,7 +240,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
+                    free_run = sin_angle_freq * M_1_2PI - wave_stat > 0.1,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -267,7 +250,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
+                    free_run = sin_angle_freq * M_1_2PI - wave_stat > 0.1,
                     initial_phase = Math.PI * 2.0 / 3.0 * 1,
                     wave_stat = wave_stat
                 };
@@ -303,7 +286,6 @@ namespace VVVF_Generator_Porting
         //only works with windows
         static void generate_video(String output_path,VVVF_Sound_Names sound_name)
         {
-            set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
 
@@ -423,7 +405,6 @@ namespace VVVF_Generator_Porting
             if (mode == Pulse_Mode.Not_In_Sync)
             {
                 double saw_freq = saw_angle_freq / Math.PI / 2.0;
-                Console.WriteLine(saw_angle_freq);
                 return String.Format("Async - " + saw_freq.ToString("F2")).PadLeft(6);
             }
             if(mode == Pulse_Mode.P_Wide_3)
@@ -437,6 +418,78 @@ namespace VVVF_Generator_Porting
 
             return mode_name;
         }
+        
+        private static void generate_opening(int image_width,int image_height, VideoWriter vr)
+        {
+            //opening
+            for (int i = 0; i < 128; i++)
+            {
+                Bitmap image = new(image_width, image_height);
+                Graphics g = Graphics.FromImage(image);
+
+                LinearGradientBrush gb = new LinearGradientBrush(new System.Drawing.Point(0, 0), new System.Drawing.Point(0, image_height), Color.FromArgb(0xFF, 0xFF, 0xFF), Color.FromArgb(0xE0, 0xE0, 0xE0));
+                g.FillRectangle(gb, 0, 0, image_width, image_height);
+
+                FontFamily simulator_title = new FontFamily("Fugaz One");
+                Font simulator_title_fnt = new Font(
+                    simulator_title,
+                    40,
+                    FontStyle.Bold,
+                    GraphicsUnit.Pixel);
+                Font simulator_title_fnt_sub = new Font(
+                    simulator_title,
+                    20,
+                    FontStyle.Bold,
+                    GraphicsUnit.Pixel);
+
+                FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
+                Font title_fnt = new Font(
+                    title_fontFamily,
+                    40,
+                    FontStyle.Regular,
+                    GraphicsUnit.Pixel);
+
+                Brush title_brush = Brushes.Black;
+           
+                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 0, image_width, 68 - 0);
+                g.DrawString("Pulse Mode", title_fnt, title_brush, 17, 13);
+                g.FillRectangle(Brushes.Red, 0, 68, image_width, 8);
+
+                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 226, image_width, 291 - 226);
+                g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, 17, 236);
+                g.FillRectangle(Brushes.Red, 0, 291, image_width, 8);
+
+                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 447, image_width, 513 - 447);
+                g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, 17, 457);
+                g.FillRectangle(Brushes.Red, 0, 513, image_width, 8);
+
+                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 669, image_width, 735 - 669);
+                g.DrawString("Freerun", title_fnt, title_brush, 17, 679);
+                g.FillRectangle(Brushes.Blue, 0, 735, image_width, 8);
+
+                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 847, image_width, 913 - 847);
+                g.DrawString("Brake", title_fnt, title_brush, 17, 857);
+                g.FillRectangle(Brushes.Blue, 0, 913, image_width, 8);
+
+                g.FillRectangle(new SolidBrush(Color.FromArgb((int)(0xB0 * ((i > 96) ? (128 - i) / 36.0 : 1)), 0x00, 0x00, 0x00)), 0, 0, image_width, image_height);
+                int transparency = (int)(0xFF * ((i > 96) ? (128 - i) / 36.0 : 1));
+                g.DrawString("C# VVVF Simulator", simulator_title_fnt, new SolidBrush(Color.FromArgb(transparency, 0xFF, 0xFF, 0xFF)), 50, 420);
+                g.DrawLine(new Pen(new SolidBrush(Color.FromArgb(transparency, 0xA0, 0xA0, 0xFF))), 0, 464, (int)((i > 20) ? image_width : image_width * i / 20.0), 464);
+                g.DrawString("presented by JOTAN", simulator_title_fnt_sub, new SolidBrush(Color.FromArgb(transparency, 0xE0, 0xE0, 0xFF)), 130, 460);
+
+                MemoryStream ms = new MemoryStream();
+                image.Save(ms, ImageFormat.Png);
+                byte[] img = ms.GetBuffer();
+                Mat mat = OpenCvSharp.Mat.FromImageData(img);
+
+                Cv2.ImShow("Wave Status View", mat);
+                Cv2.WaitKey(1);
+
+                vr.Write(mat);
+            }
+
+            
+        }
         static void generate_status_video(String output_path,VVVF_Sound_Names sound_name)
         {
             reset_control_variables();
@@ -446,7 +499,6 @@ namespace VVVF_Generator_Porting
             String gen_time = dt.ToString("yyyy-MM-dd_HH-mm-ss");
 
             Int32 sound_block_count = 0;
-            Boolean temp = true;
 
             int image_width = 500;
             int image_height = 1080;
@@ -460,7 +512,11 @@ namespace VVVF_Generator_Porting
                 return;
             }
 
-            bool loop = true;
+            generate_opening(image_width, image_height, vr);
+
+
+            bool loop = true, temp = false, video_finished = false, final_show = false ;
+            int freeze_count = 0;
             while (loop)
             {
                 Control_Values cv_U = new Control_Values
@@ -473,13 +529,15 @@ namespace VVVF_Generator_Porting
                 };
                 get_Calculated_Value(sound_name, cv_U);
 
-                if (sound_block_count % movie_div == 0 && temp)
+                if (sound_block_count % movie_div == 0 && temp || final_show)
                 {
                     sin_time = 0;
                     saw_time = 0;
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
-                    g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
+
+                    LinearGradientBrush gb = new LinearGradientBrush(new System.Drawing.Point(0, 0), new System.Drawing.Point(0, image_height),Color.FromArgb(0xFF,0xFF,0xFF) , Color.FromArgb(0xE0, 0xE0, 0xE0));
+                    g.FillRectangle(gb, 0, 0, image_width, image_height);
 
                     FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
                     Font title_fnt = new Font(
@@ -495,31 +553,39 @@ namespace VVVF_Generator_Porting
                        FontStyle.Regular,
                        GraphicsUnit.Pixel);
 
+                    Brush title_brush = Brushes.Black;
+                    Brush letter_brush = Brushes.Black;
+
                     g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 0, image_width, 68 - 0);
-                    g.DrawString("Pulse Mode", title_fnt, Brushes.Black, 17, 13);
+                    g.DrawString("Pulse Mode", title_fnt, title_brush, 17, 13);
                     g.FillRectangle(Brushes.Red, 0, 68, image_width, 8);
-                    g.DrawString(get_Pulse_Name(video_pulse_mode), val_fnt, Brushes.Black, 17, 100);
+                    if(!final_show)
+                        g.DrawString(get_Pulse_Name(video_pulse_mode), val_fnt, letter_brush, 17, 100);
 
                     g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 226, image_width, 291 - 226);
-                    g.DrawString("Sine Freq[Hz]", title_fnt, Brushes.Black, 17, 236);
+                    g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, 17, 236);
                     g.FillRectangle(Brushes.Red, 0, 291, image_width, 8);
                     double sine_freq = sin_angle_freq / Math.PI / 2;
-                    g.DrawString(String.Format("{0:f2}", sine_freq).PadLeft(6), val_fnt, Brushes.Black, 17, 323);
+                    if (!final_show)
+                        g.DrawString(String.Format("{0:f2}", sine_freq).PadLeft(6), val_fnt, letter_brush, 17, 323);
 
                     g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 447, image_width, 513 - 447);
-                    g.DrawString("Sine Amplitude[%]", title_fnt, Brushes.Black, 17, 457);
+                    g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, 17, 457);
                     g.FillRectangle(Brushes.Red, 0, 513, image_width, 8);
-                    g.DrawString(String.Format("{0:f2}", video_sine_amplitude*100).PadLeft(6), val_fnt, Brushes.Black, 17, 548);
+                    if (!final_show)
+                        g.DrawString(String.Format("{0:f2}", video_sine_amplitude*100).PadLeft(6), val_fnt, letter_brush, 17, 548);
 
                     g.FillRectangle(new SolidBrush(Color.FromArgb(200,200,255)), 0, 669, image_width, 735- 669);
-                    g.DrawString("Freerun", title_fnt, Brushes.Black, 17, 679);
+                    g.DrawString("Freerun", title_fnt, title_brush, 17, 679);
                     g.FillRectangle(Brushes.Blue, 0, 735, image_width, 8);
-                    g.DrawString((mascon_off).ToString(), val_fnt, Brushes.Black, 17, 750);
+                    if (!final_show)
+                        g.DrawString((mascon_off).ToString(), val_fnt, letter_brush, 17, 750);
 
                     g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 847, image_width, 913 - 847);
-                    g.DrawString("Brake", title_fnt, Brushes.Black, 17, 857);
+                    g.DrawString("Brake", title_fnt, title_brush, 17, 857);
                     g.FillRectangle(Brushes.Blue, 0, 913, image_width, 8);
-                    g.DrawString(brake.ToString(), val_fnt, Brushes.Black, 17, 930);
+                    if (!final_show)
+                        g.DrawString(brake.ToString(), val_fnt, letter_brush, 17, 930);
 
 
 
@@ -549,7 +615,13 @@ namespace VVVF_Generator_Porting
 
                 sound_block_count++;
 
-                loop = check_for_freq_change();
+                video_finished = !check_for_freq_change();
+                if (video_finished)
+                {
+                    final_show = true;
+                    freeze_count++;
+                }
+                if (freeze_count > 64) loop = false;
             }
 
             vr.Release();
@@ -686,7 +758,6 @@ namespace VVVF_Generator_Porting
         static void realtime_sound(VVVF_Sound_Names sound_name)
         {
             
-            set_mascon_off_count(sound_name);
             reset_control_variables();
             reset_all_variables();
 
@@ -731,8 +802,8 @@ namespace VVVF_Generator_Porting
 
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
             String output_path = get_Path();
-            generate_sound(output_path, sound_name);
-            generate_video(output_path, sound_name);
+            //generate_sound(output_path, sound_name);
+            //generate_video(output_path, sound_name);
             generate_status_video(output_path, sound_name);
             //realtime_sound(sound_name);
 
