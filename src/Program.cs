@@ -119,6 +119,7 @@ namespace VVVF_Generator_Porting
 
         static Boolean check_for_freq_change()
         {
+            double pre_sin_angle_freq = sin_angle_freq;
             count++;
             if (count % 60 == 0 && do_frequency_change && sin_angle_freq / Math.PI / 2.0 == wave_stat)
             {
@@ -132,13 +133,13 @@ namespace VVVF_Generator_Porting
 
             if (temp_count == 0)
             {
-                if (sin_angle_freq / 2 / Math.PI > 90 && !brake && do_frequency_change)
+                if (sin_angle_freq / 2 / Math.PI > 120 && !brake && do_frequency_change)
                 {
                     do_frequency_change = false;
                     mascon_off = true;
                     count = 0;
                 }
-                else if (count / div_freq > 2 && !do_frequency_change)
+                else if (count / div_freq > 3 && !do_frequency_change)
                 {
                     do_frequency_change = true;
                     mascon_off = false;
@@ -148,13 +149,13 @@ namespace VVVF_Generator_Porting
             }
             else if (temp_count == 1)
             {
-                if (sin_angle_freq / 2 / Math.PI < 30 && brake && do_frequency_change)
+                if (sin_angle_freq / 2 / Math.PI < 20 && brake && do_frequency_change)
                 {
                     do_frequency_change = false;
                     mascon_off = true;
                     count = 0;
                 }
-                else if (count / div_freq > 2 && !do_frequency_change)
+                else if (count / div_freq > 1 && !do_frequency_change)
                 {
                     do_frequency_change = true;
                     mascon_off = false;
@@ -171,7 +172,7 @@ namespace VVVF_Generator_Porting
 
                     count = 0;
                 }
-                else if (count / div_freq > 2 && !do_frequency_change)
+                else if (count / div_freq > 1 && !do_frequency_change)
                 {
                     do_frequency_change = true;
                     mascon_off = false;
@@ -188,8 +189,12 @@ namespace VVVF_Generator_Porting
 
             if (!mascon_off)
             {
-                wave_stat += (Math.PI * 2) / (double)mascon_off_div;
-                if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2.0);
+                if (wave_stat == pre_sin_angle_freq / M_2PI) wave_stat = sin_angle_freq / M_2PI;
+                else
+                {
+                    wave_stat += (Math.PI * 2) / (double)mascon_off_div;
+                    if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2.0);
+                }
             }
             else
             {
@@ -240,7 +245,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI - wave_stat > 0.1,
+                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -250,7 +255,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI - wave_stat > 0.1,
+                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
                     initial_phase = Math.PI * 2.0 / 3.0 * 1,
                     wave_stat = wave_stat
                 };
@@ -321,8 +326,8 @@ namespace VVVF_Generator_Porting
                     saw_time = 0;
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
-                    g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
-                    g.DrawLine(new Pen(Color.DarkGray), 0, image_height / 2, image_width, image_height / 2);
+                    g.FillRectangle(new SolidBrush(Color.Black), 0, 0, image_width, image_height);
+                    g.DrawLine(new Pen(Color.Gray), 0, image_height / 2, image_width, image_height / 2);
 
                     double[] points_U = new double[image_width];
                     double[] points_V = new double[image_width];
@@ -362,7 +367,7 @@ namespace VVVF_Generator_Porting
 
                         int curr_val = (int)(-(points_U[i] - points_V[i]) * wave_height + image_height / 2.0);
                         int next_val = (int)(-(points_U[i+1] - points_V[i+1]) * wave_height  + image_height / 2.0);
-                        g.DrawLine(new Pen(Color.Blue), i, curr_val, ((curr_val != next_val) ? i : i+1), next_val);
+                        g.DrawLine(new Pen(Color.GreenYellow), i, curr_val, ((curr_val != next_val) ? i : i+1), next_val);
 
                         //g.DrawLine(new Pen(Color.Gray), i, (int)(points_U[i] * wave_height + image_height / 2.0), i + 1, (int)(points_U[i+1] * wave_height + image_height / 2.0));
                         //g.DrawLine(new Pen(Color.Gray), i, (int)(points_V[i] * wave_height + image_height / 2.0), i + 1, (int)(points_V[i + 1] * wave_height + image_height / 2.0));
@@ -427,7 +432,7 @@ namespace VVVF_Generator_Porting
                 Bitmap image = new(image_width, image_height);
                 Graphics g = Graphics.FromImage(image);
 
-                LinearGradientBrush gb = new LinearGradientBrush(new System.Drawing.Point(0, 0), new System.Drawing.Point(0, image_height), Color.FromArgb(0xFF, 0xFF, 0xFF), Color.FromArgb(0xE0, 0xE0, 0xE0));
+                LinearGradientBrush gb = new LinearGradientBrush(new System.Drawing.Point(0, 0), new System.Drawing.Point(image_width, image_height), Color.FromArgb(0xFF, 0xFF, 0xFF), Color.FromArgb(0xFD , 0xE0, 0xE0));
                 g.FillRectangle(gb, 0, 0, image_width, image_height);
 
                 FontFamily simulator_title = new FontFamily("Fugaz One");
@@ -442,7 +447,7 @@ namespace VVVF_Generator_Porting
                     FontStyle.Bold,
                     GraphicsUnit.Pixel);
 
-                FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
+                FontFamily title_fontFamily = new FontFamily("Fugaz One");
                 Font title_fnt = new Font(
                     title_fontFamily,
                     40,
@@ -451,31 +456,31 @@ namespace VVVF_Generator_Porting
 
                 Brush title_brush = Brushes.Black;
            
-                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 0, image_width, 68 - 0);
-                g.DrawString("Pulse Mode", title_fnt, title_brush, 17, 13);
-                g.FillRectangle(Brushes.Red, 0, 68, image_width, 8);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 0, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 68 - 0);
+                g.DrawString("Pulse Mode", title_fnt, title_brush, (int)((i < 40) ? -1000 : (double)((i > 80) ? 17 : 17 * (i - 40) / 40.0)), 8);
+                g.FillRectangle(Brushes.Blue, 0, 68, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 8);
 
-                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 226, image_width, 291 - 226);
-                g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, 17, 236);
-                g.FillRectangle(Brushes.Red, 0, 291, image_width, 8);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 226, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 291 - 226);
+                g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, (int)((i < 40 + 10) ? -1000 : (double)((i > 80 + 10) ? 17 : 17 * (i - (40+10)) / 40.0)), 231);
+                g.FillRectangle(Brushes.Blue, 0, 291, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 8);
 
-                g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 447, image_width, 513 - 447);
-                g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, 17, 457);
-                g.FillRectangle(Brushes.Red, 0, 513, image_width, 8);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 447, (int)(image_width * (double)(((i > 30) ? 1 : i / 30.0))), 513 - 447);
+                g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, (int)((i < 40 + 20) ? -1000 : (i > 80 + 20) ? 17 : 17 * (i - (40 + 20)) / 40.0), 452);
+                g.FillRectangle(Brushes.Blue, 0, 513, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 8);
 
-                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 669, image_width, 735 - 669);
-                g.DrawString("Freerun", title_fnt, title_brush, 17, 679);
-                g.FillRectangle(Brushes.Blue, 0, 735, image_width, 8);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(240, 240, 240)), 0, 669, (int)(image_width * (double)(((i > 30) ? 1 : i / 30.0))), 735 - 669);
+                g.DrawString("Freerun", title_fnt, title_brush, (int)((i < 40 + 30) ? -1000 : (i > 80 + 30) ? 17 : 17 * (i - (40 + 30)) / 40.0), 674);
+                g.FillRectangle(Brushes.LightGray, 0, 735, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 8);
 
-                g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 847, image_width, 913 - 847);
-                g.DrawString("Brake", title_fnt, title_brush, 17, 857);
-                g.FillRectangle(Brushes.Blue, 0, 913, image_width, 8);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(240, 240, 240)), 0, 847, (int)(image_width * (double)(((i > 30) ? 1 : i / 30.0))), 913 - 847);
+                g.DrawString("Brake", title_fnt, title_brush, (int)((i < 40 + 40) ? -1000 : (i > 80 + 40) ? 17 : 17 * (i - (40 + 40)) / 40.0), 852);
+                g.FillRectangle(Brushes.LightGray, 0, 913, (int)(image_width * ((i > 30) ? 1 : i / 30.0)), 8);
 
                 g.FillRectangle(new SolidBrush(Color.FromArgb((int)(0xB0 * ((i > 96) ? (128 - i) / 36.0 : 1)), 0x00, 0x00, 0x00)), 0, 0, image_width, image_height);
                 int transparency = (int)(0xFF * ((i > 96) ? (128 - i) / 36.0 : 1));
                 g.DrawString("C# VVVF Simulator", simulator_title_fnt, new SolidBrush(Color.FromArgb(transparency, 0xFF, 0xFF, 0xFF)), 50, 420);
                 g.DrawLine(new Pen(new SolidBrush(Color.FromArgb(transparency, 0xA0, 0xA0, 0xFF))), 0, 464, (int)((i > 20) ? image_width : image_width * i / 20.0), 464);
-                g.DrawString("presented by JOTAN", simulator_title_fnt_sub, new SolidBrush(Color.FromArgb(transparency, 0xE0, 0xE0, 0xFF)), 130, 460);
+                g.DrawString("presented by JOTAN", simulator_title_fnt_sub, new SolidBrush(Color.FromArgb(transparency, 0xE0, 0xE0, 0xFF)), 135, 460);
 
                 MemoryStream ms = new MemoryStream();
                 image.Save(ms, ImageFormat.Png);
@@ -515,8 +520,9 @@ namespace VVVF_Generator_Porting
             generate_opening(image_width, image_height, vr);
 
 
-            bool loop = true, temp = false, video_finished = false, final_show = false ;
+            bool loop = true, temp = false, video_finished = false, final_show = false ,first_show = true;
             int freeze_count = 0;
+
             while (loop)
             {
                 Control_Values cv_U = new Control_Values
@@ -529,17 +535,37 @@ namespace VVVF_Generator_Porting
                 };
                 get_Calculated_Value(sound_name, cv_U);
 
-                if (sound_block_count % movie_div == 0 && temp || final_show)
+                if (sound_block_count % movie_div == 0 && temp || final_show || first_show)
                 {
                     sin_time = 0;
                     saw_time = 0;
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
 
-                    LinearGradientBrush gb = new LinearGradientBrush(new System.Drawing.Point(0, 0), new System.Drawing.Point(0, image_height),Color.FromArgb(0xFF,0xFF,0xFF) , Color.FromArgb(0xE0, 0xE0, 0xE0));
+                    Color gradation_color;
+                    if(sin_angle_freq / M_2PI != wave_stat)
+                    {
+                        gradation_color = Color.FromArgb(0xE0, 0xFD,0xE0);
+                    }else if (!brake)
+                    {
+                        gradation_color = Color.FromArgb(0xE0, 0xE0, 0xFD);
+                    }
+                    else
+                    {
+                        gradation_color = Color.FromArgb(0xFD,0xE0, 0xE0);
+                    }
+
+
+                    LinearGradientBrush gb = new LinearGradientBrush(
+                        new System.Drawing.Point(0, 0), 
+                        new System.Drawing.Point(image_width, image_height),
+                        Color.FromArgb(0xFF,0xFF,0xFF) ,
+                        gradation_color
+                    );
+
                     g.FillRectangle(gb, 0, 0, image_width, image_height);
 
-                    FontFamily title_fontFamily = new FontFamily("Arial Rounded MT Bold");
+                    FontFamily title_fontFamily = new FontFamily("Fugaz One");
                     Font title_fnt = new Font(
                        title_fontFamily,
                        40,
@@ -556,34 +582,34 @@ namespace VVVF_Generator_Porting
                     Brush title_brush = Brushes.Black;
                     Brush letter_brush = Brushes.Black;
 
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 0, image_width, 68 - 0);
-                    g.DrawString("Pulse Mode", title_fnt, title_brush, 17, 13);
-                    g.FillRectangle(Brushes.Red, 0, 68, image_width, 8);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 0, image_width, 68 - 0);
+                    g.DrawString("Pulse Mode", title_fnt, title_brush, 17, 8);
+                    g.FillRectangle(Brushes.Blue, 0, 68, image_width, 8);
                     if(!final_show)
                         g.DrawString(get_Pulse_Name(video_pulse_mode), val_fnt, letter_brush, 17, 100);
 
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 226, image_width, 291 - 226);
-                    g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, 17, 236);
-                    g.FillRectangle(Brushes.Red, 0, 291, image_width, 8);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 226, image_width, 291 - 226);
+                    g.DrawString("Sine Freq[Hz]", title_fnt, title_brush, 17, 231);
+                    g.FillRectangle(Brushes.Blue, 0, 291, image_width, 8);
                     double sine_freq = sin_angle_freq / Math.PI / 2;
                     if (!final_show)
                         g.DrawString(String.Format("{0:f2}", sine_freq).PadLeft(6), val_fnt, letter_brush, 17, 323);
 
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, 200, 200)), 0, 447, image_width, 513 - 447);
-                    g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, 17, 457);
-                    g.FillRectangle(Brushes.Red, 0, 513, image_width, 8);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 447, image_width, 513 - 447);
+                    g.DrawString("Sine Amplitude[%]", title_fnt, title_brush, 17, 452);
+                    g.FillRectangle(Brushes.Blue, 0, 513, image_width, 8);
                     if (!final_show)
                         g.DrawString(String.Format("{0:f2}", video_sine_amplitude*100).PadLeft(6), val_fnt, letter_brush, 17, 548);
 
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(200,200,255)), 0, 669, image_width, 735- 669);
-                    g.DrawString("Freerun", title_fnt, title_brush, 17, 679);
-                    g.FillRectangle(Brushes.Blue, 0, 735, image_width, 8);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(240, 240, 240)), 0, 669, image_width, 735- 669);
+                    g.DrawString("Freerun", title_fnt, title_brush, 17, 674);
+                    g.FillRectangle(Brushes.LightGray, 0, 735, image_width, 8);
                     if (!final_show)
                         g.DrawString((mascon_off).ToString(), val_fnt, letter_brush, 17, 750);
 
-                    g.FillRectangle(new SolidBrush(Color.FromArgb(200, 200, 255)), 0, 847, image_width, 913 - 847);
-                    g.DrawString("Brake", title_fnt, title_brush, 17, 857);
-                    g.FillRectangle(Brushes.Blue, 0, 913, image_width, 8);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(240, 240, 240)), 0, 847, image_width, 913 - 847);
+                    g.DrawString("Brake", title_fnt, title_brush, 17, 852);
+                    g.FillRectangle(Brushes.LightGray, 0, 913, image_width, 8);
                     if (!final_show)
                         g.DrawString(brake.ToString(), val_fnt, letter_brush, 17, 930);
 
@@ -613,6 +639,16 @@ namespace VVVF_Generator_Porting
                     temp = true;
                 }
 
+                if (first_show)
+                {
+                    freeze_count++;
+                    if(freeze_count > 64)
+                    {
+                        freeze_count = 0;
+                        first_show = false;
+                    }
+                    continue;
+                }
                 sound_block_count++;
 
                 video_finished = !check_for_freq_change();
@@ -631,12 +667,13 @@ namespace VVVF_Generator_Porting
         {
             while (true)
             {
-                
-                
+
+                double pre_sin_angle_freq = sin_angle_freq;
                 if (Console.KeyAvailable)
                 {
                     ConsoleKeyInfo keyinfo = Console.ReadKey();
                     ConsoleKey key = keyinfo.Key;
+                    
                     if (key.Equals(ConsoleKey.B))
                     {
                         brake = !brake;
@@ -697,8 +734,12 @@ namespace VVVF_Generator_Porting
 
                 if (!mascon_off)
                 {
-                    wave_stat += (Math.PI * 2) / (double)(mascon_off_div/20.0);
-                    if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
+                    if (wave_stat == pre_sin_angle_freq / M_2PI) wave_stat = sin_angle_freq / M_2PI;
+                    else
+                    {
+                        wave_stat += (Math.PI * 2) / (double)(mascon_off_div / 20.0);
+                        if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
+                    }
                 }
                 else
                 {
@@ -802,8 +843,8 @@ namespace VVVF_Generator_Porting
 
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
             String output_path = get_Path();
-            //generate_sound(output_path, sound_name);
-            //generate_video(output_path, sound_name);
+            generate_sound(output_path, sound_name);
+            generate_video(output_path, sound_name);
             generate_status_video(output_path, sound_name);
             //realtime_sound(sound_name);
 
