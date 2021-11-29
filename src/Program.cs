@@ -16,12 +16,12 @@ namespace VVVF_Generator_Porting
 {
     internal class Program
     {
-        static double M_2PI = 6.283185307179586476925286766559;
-        static double M_PI = 3.1415926535897932384626433832795;
-        static double M_PI_2 = 1.5707963267948966192313216916398;
-        static double M_2_PI = 0.63661977236758134307553505349006;
-        static double M_1_PI = 0.31830988618379067153776752674503;
-        static double M_1_2PI = 0.15915494309189533576888376337251;
+        static double M_2PI   = Math.PI * 2;
+        static double M_PI    = Math.PI;
+        static double M_PI_2  = Math.PI / 2.0;
+        static double M_2_PI  = 2.0 / Math.PI;
+        static double M_1_PI  = 1.0 / Math.PI;
+        static double M_1_2PI = 1.0 / (2.0 * Math.PI);
 
         static double count = 0;
         static int div_freq = 192 * 1000;
@@ -102,7 +102,7 @@ namespace VVVF_Generator_Porting
         // variables for controlling parameters
         static Boolean do_frequency_change = true;
         static Boolean brake = false;
-
+        static Boolean free_run = false;
         static double wave_stat = 0;
         static bool mascon_off = false;
         static int temp_count = 0;
@@ -111,7 +111,7 @@ namespace VVVF_Generator_Porting
         {
             do_frequency_change = true;
             brake = false;
-
+            free_run = false;
             wave_stat = 0;
             mascon_off = false;
             temp_count = 0;
@@ -121,7 +121,7 @@ namespace VVVF_Generator_Porting
         {
             double pre_sin_angle_freq = sin_angle_freq;
             count++;
-            if (count % 60 == 0 && do_frequency_change && sin_angle_freq / Math.PI / 2.0 == wave_stat)
+            if (count % 60 == 0 && do_frequency_change && sin_angle_freq * M_1_2PI == wave_stat)
             {
                 double sin_new_angle_freq = sin_angle_freq;
                 if (!brake) sin_new_angle_freq += Math.PI / 500 * 1.5;
@@ -189,17 +189,27 @@ namespace VVVF_Generator_Porting
 
             if (!mascon_off)
             {
-                if (wave_stat == pre_sin_angle_freq / M_2PI) wave_stat = sin_angle_freq / M_2PI;
+                if (!free_run)
+                    wave_stat = sin_angle_freq * M_1_2PI;
                 else
                 {
                     wave_stat += (Math.PI * 2) / (double)mascon_off_div;
-                    if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2.0);
+                    if (sin_angle_freq * M_1_2PI < wave_stat)
+                    {
+                        wave_stat = sin_angle_freq * M_1_2PI;
+                        free_run = false;
+                    }
+                    else
+                    {
+                        free_run = true;
+                    }
                 }
             }
             else
             {
                 wave_stat -= (Math.PI * 2) / (double)mascon_off_div;
                 if (wave_stat < 0) wave_stat = 0;
+                free_run = true;
             }
 
             return true;
@@ -245,7 +255,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
+                    free_run = free_run,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -255,7 +265,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq * M_1_2PI != wave_stat,
+                    free_run = free_run,
                     initial_phase = Math.PI * 2.0 / 3.0 * 1,
                     wave_stat = wave_stat
                 };
@@ -342,7 +352,7 @@ namespace VVVF_Generator_Porting
                         {
                             brake = brake,
                             mascon_on = !mascon_off,
-                            free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                            free_run = free_run,
                             initial_phase = Math.PI * 2.0 / 3.0 * 0,
                             wave_stat = wave_stat
                         };
@@ -351,7 +361,7 @@ namespace VVVF_Generator_Porting
                         {
                             brake = brake,
                             mascon_on = !mascon_off,
-                            free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                            free_run = free_run,
                             initial_phase = Math.PI * 2.0 / 3.0 * 1,
                             wave_stat = wave_stat
                         };
@@ -529,7 +539,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                    free_run = Math.Abs(sin_angle_freq - wave_stat * M_2PI) < 0.01,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -734,17 +744,24 @@ namespace VVVF_Generator_Porting
 
                 if (!mascon_off)
                 {
-                    if (wave_stat == pre_sin_angle_freq / M_2PI) wave_stat = sin_angle_freq / M_2PI;
+                    if (!free_run) wave_stat = sin_angle_freq / M_2PI;
                     else
                     {
                         wave_stat += (Math.PI * 2) / (double)(mascon_off_div / 20.0);
-                        if (sin_angle_freq / (Math.PI * 2) < wave_stat) wave_stat = sin_angle_freq / (Math.PI * 2);
+                        if (sin_angle_freq / (Math.PI * 2) < wave_stat)
+                        {
+                            wave_stat = sin_angle_freq / (Math.PI * 2);
+                            free_run = false;
+                        }
+                        else
+                            free_run = true;
                     }
                 }
                 else
                 {
                     wave_stat -= (Math.PI * 2) / (double)(mascon_off_div / 20.0);
                     if (wave_stat < 0) wave_stat = 0;
+                    free_run = true;
                 }
 
                 byte[] add = new byte[20];
@@ -758,7 +775,7 @@ namespace VVVF_Generator_Porting
                     {
                         brake = brake,
                         mascon_on = !mascon_off,
-                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                        free_run = free_run,
                         initial_phase = Math.PI * 2.0 / 3.0 * 0,
                         wave_stat = wave_stat
                     };
@@ -767,7 +784,7 @@ namespace VVVF_Generator_Porting
                     {
                         brake = brake,
                         mascon_on = !mascon_off,
-                        free_run = sin_angle_freq / 2 / Math.PI != wave_stat,
+                        free_run = free_run,
                         initial_phase = Math.PI * 2.0 / 3.0 * 1,
                         wave_stat = wave_stat
                     };
@@ -842,11 +859,11 @@ namespace VVVF_Generator_Porting
             DateTime startDt = DateTime.Now;
 
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
-            String output_path = get_Path();
-            generate_sound(output_path, sound_name);
-            generate_video(output_path, sound_name);
-            generate_status_video(output_path, sound_name);
-            //realtime_sound(sound_name);
+            //String output_path = get_Path();
+            //generate_sound(output_path, sound_name);
+            //generate_video(output_path, sound_name);
+            //generate_status_video(output_path, sound_name);
+            realtime_sound(sound_name);
 
 
 
