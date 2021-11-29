@@ -539,7 +539,7 @@ namespace VVVF_Generator_Porting
                 {
                     brake = brake,
                     mascon_on = !mascon_off,
-                    free_run = Math.Abs(sin_angle_freq - wave_stat * M_2PI) < 0.01,
+                    free_run = free_run,
                     initial_phase = Math.PI * 2.0 / 3.0 * 0,
                     wave_stat = wave_stat
                 };
@@ -553,7 +553,7 @@ namespace VVVF_Generator_Porting
                     Graphics g = Graphics.FromImage(image);
 
                     Color gradation_color;
-                    if(sin_angle_freq / M_2PI != wave_stat)
+                    if(free_run)
                     {
                         gradation_color = Color.FromArgb(0xE0, 0xFD,0xE0);
                     }else if (!brake)
