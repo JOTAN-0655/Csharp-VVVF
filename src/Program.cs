@@ -25,7 +25,7 @@ namespace VVVF_Generator_Porting
 
         static double count = 0;
         static int div_freq = 192 * 1000;
-        public static int mascon_off_div = 180000;
+        public static int mascon_off_div = 18000;
 
 
         public static Wave_Values get_Calculated_Value(VVVF_Sound_Names name, Control_Values cv)
@@ -336,7 +336,7 @@ namespace VVVF_Generator_Porting
                     saw_time = 0;
                     Bitmap image = new(image_width, image_height);
                     Graphics g = Graphics.FromImage(image);
-                    g.FillRectangle(new SolidBrush(Color.Black), 0, 0, image_width, image_height);
+                    g.FillRectangle(new SolidBrush(Color.White), 0, 0, image_width, image_height);
                     g.DrawLine(new Pen(Color.Gray), 0, image_height / 2, image_width, image_height / 2);
 
                     double[] points_U = new double[image_width];
@@ -377,7 +377,7 @@ namespace VVVF_Generator_Porting
 
                         int curr_val = (int)(-(points_U[i] - points_V[i]) * wave_height + image_height / 2.0);
                         int next_val = (int)(-(points_U[i+1] - points_V[i+1]) * wave_height  + image_height / 2.0);
-                        g.DrawLine(new Pen(Color.GreenYellow), i, curr_val, ((curr_val != next_val) ? i : i+1), next_val);
+                        g.DrawLine(new Pen(Color.Black), i, curr_val, ((curr_val != next_val) ? i : i+1), next_val);
 
                         //g.DrawLine(new Pen(Color.Gray), i, (int)(points_U[i] * wave_height + image_height / 2.0), i + 1, (int)(points_U[i+1] * wave_height + image_height / 2.0));
                         //g.DrawLine(new Pen(Color.Gray), i, (int)(points_V[i] * wave_height + image_height / 2.0), i + 1, (int)(points_V[i + 1] * wave_height + image_height / 2.0));
@@ -859,7 +859,7 @@ namespace VVVF_Generator_Porting
             DateTime startDt = DateTime.Now;
 
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
-            //String output_path = get_Path();
+            String output_path = get_Path();
             //generate_sound(output_path, sound_name);
             //generate_video(output_path, sound_name);
             //generate_status_video(output_path, sound_name);

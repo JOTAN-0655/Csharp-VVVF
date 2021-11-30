@@ -68,7 +68,7 @@ namespace VVVF_Generator_Porting
 
         static public int mod_i(int a, int b)
         {
-            int div = (int)((float)a / (float)b);
+            int div = (int)((double)a / (double)b);
             return a - (div * b);
         }
 
