@@ -100,14 +100,14 @@ namespace VVVF_Generator_Porting
         }
 
         // variables for controlling parameters
-        static Boolean do_frequency_change = true;
-        static Boolean brake = false;
-        static Boolean free_run = false;
-        static double wave_stat = 0;
-        static bool mascon_off = false;
-        static int temp_count = 0;
+        public static Boolean do_frequency_change = true;
+        public static Boolean brake = false;
+        public static Boolean free_run = false;
+        public static double wave_stat = 0;
+        public static bool mascon_off = false;
+        public static int temp_count = 0;
 
-        static void reset_control_variables()
+        public static void reset_control_variables()
         {
             do_frequency_change = true;
             brake = false;
@@ -133,7 +133,7 @@ namespace VVVF_Generator_Porting
 
             if (temp_count == 0)
             {
-                if (sin_angle_freq / 2 / Math.PI > 120 && !brake && do_frequency_change)
+                if (sin_angle_freq / 2 / Math.PI > 100 && !brake && do_frequency_change)
                 {
                     do_frequency_change = false;
                     mascon_off = true;
@@ -860,10 +860,10 @@ namespace VVVF_Generator_Porting
 
             VVVF_Sound_Names sound_name = get_Choosed_Sound();
             String output_path = get_Path();
-            //generate_sound(output_path, sound_name);
+            generate_sound(output_path, sound_name);
             //generate_video(output_path, sound_name);
             //generate_status_video(output_path, sound_name);
-            realtime_sound(sound_name);
+            //realtime_sound(sound_name);
 
 
 

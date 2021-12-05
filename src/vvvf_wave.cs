@@ -24,6 +24,15 @@ namespace VVVF_Generator_Porting
 			public int pwm_value;
         };
 
+		public static Wave_Values get_Wave_Values_None()
+        {
+			Wave_Values wv;
+			wv.sin_value = 0;
+			wv.saw_value = 0;
+			wv.pwm_value = 0;
+			return wv;
+		}
+
         public struct Control_Values {
 			public bool brake;
 			public bool mascon_on;
@@ -307,6 +316,19 @@ namespace VVVF_Generator_Porting
 			double amplitude = get_Amplitude(cv.wave_stat, 65);
 			double expect_saw_angle_freq = 0;
 			Pulse_Mode pulse_mode;
+
+			if (cv.free_run && !cv.mascon_on && cv.wave_stat > 67)
+            {
+				cv.wave_stat = 67;
+				Program.wave_stat = 67;
+			}
+				
+			else if(cv.free_run && cv.mascon_on && cv.wave_stat > 67)
+            {
+				cv.wave_stat = sin_angle_freq * M_1_2PI;
+				Program.wave_stat = sin_angle_freq * M_1_2PI;
+			}
+
 			if (cv.wave_stat > 67)
 				pulse_mode = Pulse_Mode.P_1;
 			else if (cv.wave_stat > 60)
@@ -388,11 +410,7 @@ namespace VVVF_Generator_Porting
 					pulse_mode = Pulse_Mode.P_27;
 				else
 				{
-					Wave_Values wv;
-					wv.sin_value = 0;
-					wv.saw_value = 0;
-					wv.pwm_value = 0;
-					return wv;
+					return get_Wave_Values_None();
 				}
 			}
 
@@ -457,11 +475,7 @@ namespace VVVF_Generator_Porting
 					}
 					else
 					{
-						Wave_Values wv;
-						wv.sin_value = 0;
-						wv.saw_value = 0;
-						wv.pwm_value = 0;
-						return wv;
+						return get_Wave_Values_None();
 					}
 				}
 			}
@@ -516,6 +530,7 @@ namespace VVVF_Generator_Porting
 			wv.sin_value = sin_value;
 			wv.saw_value = saw_value;
 			wv.pwm_value = pwm_value;
+
 			return wv;
 		}
 
@@ -546,11 +561,7 @@ namespace VVVF_Generator_Porting
 				pulse_mode = Pulse_Mode.P_33;
 			else
 			{
-				Wave_Values wv;
-				wv.sin_value = 0;
-				wv.saw_value = 0;
-				wv.pwm_value = 0;
-				return wv;
+				return get_Wave_Values_None();
 			}
 			return calculate_common(pulse_mode, expect_saw_angle_freq, cv.initial_phase, amplitude);
 		}
@@ -572,11 +583,7 @@ namespace VVVF_Generator_Porting
 			}
 			else if (cv.brake && cv.wave_stat < 8.5)
 			{
-				Wave_Values wv;
-				wv.sin_value = 0;
-				wv.saw_value = 0;
-				wv.pwm_value = 0;
-				return wv;
+				return get_Wave_Values_None();
 			}
 			else if (cv.wave_stat > 2)
 			{
@@ -700,11 +707,7 @@ namespace VVVF_Generator_Porting
 			}
 			else if (cv.brake && cv.wave_stat < 7.4)
 			{
-				Wave_Values wv;
-				wv.sin_value = 0;
-				wv.saw_value = 0;
-				wv.pwm_value = 0;
-				return wv;
+				return get_Wave_Values_None();
 			}
 			else if (cv.wave_stat >= 2)
 			{
@@ -823,7 +826,6 @@ namespace VVVF_Generator_Porting
 			double amplitude = get_Amplitude(cv.wave_stat, 80);
 
 			double expect_saw_angle_freq = 0;
-			Wave_Values wv;
 			Pulse_Mode pulse_mode;
 			if (80 <= cv.wave_stat)
 				pulse_mode = Pulse_Mode.P_1;
@@ -876,10 +878,7 @@ namespace VVVF_Generator_Porting
 					}
 					else
 					{
-						wv.sin_value = 0;
-						wv.saw_value = 0;
-						wv.pwm_value = 0;
-						return wv;
+						return get_Wave_Values_None();
 					}
 				}
 			}
@@ -1115,11 +1114,7 @@ namespace VVVF_Generator_Porting
 				{
 					if( cv.wave_stat < 5)
                     {
-						Wave_Values wv;
-						wv.sin_value = 0;
-						wv.saw_value = 0;
-						wv.pwm_value = 0;
-						return wv;
+						return get_Wave_Values_None();
 					}
 					pulse_Mode = Pulse_Mode.Not_In_Sync;
 					double base_freq = 260;
@@ -1409,11 +1404,7 @@ namespace VVVF_Generator_Porting
 				else if (7.8 <= cv.wave_stat || (cv.free_run && sin_angle_freq > 7.8 * M_2PI)) pulse_Mode = Pulse_Mode.P_21;
 				else
 				{
-					Wave_Values wv = new Wave_Values();
-					wv.sin_value = 0;
-					wv.saw_value = 0;
-					wv.pwm_value = 0;
-					return wv;
+					return get_Wave_Values_None();
 				}
 			}
 			else
@@ -1453,11 +1444,7 @@ namespace VVVF_Generator_Porting
 
 			if(cv.free_run && !cv.mascon_on)
             {
-				Wave_Values wv = new Wave_Values();
-				wv.sin_value = 0;
-				wv.saw_value = 0;
-				wv.pwm_value = 0;
-				return wv;
+				return get_Wave_Values_None();
 			}
 
 			if (cv.brake)
@@ -1514,11 +1501,7 @@ namespace VVVF_Generator_Porting
 
 			if(!cv.mascon_on && cv.free_run && cv.wave_stat < 18)
             {
-				Wave_Values wv = new Wave_Values();
-				wv.sin_value = 0;
-				wv.saw_value = 0;
-				wv.pwm_value = 0;
-				return wv;
+				return get_Wave_Values_None();
 			}
 
 			if (cv.brake)
@@ -1611,11 +1594,7 @@ namespace VVVF_Generator_Porting
 					pulse_Mode = Pulse_Mode.P_33;
 				else
 				{
-					Wave_Values wv;
-					wv.sin_value = 0;
-					wv.saw_value = 0;
-					wv.pwm_value = 0;
-					return wv;
+					return get_Wave_Values_None();
 				}
 			}
 			else
