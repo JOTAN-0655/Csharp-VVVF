@@ -5,8 +5,10 @@ PC上で、VVVFの音を再現します。<br>
 このプログラムは、VisualStudio上のC#コンソールアプリ用です。<br>
 
 # 依存関係
+
 ## 動画の出力
 ・OpenCV - Nugetから、取得できます。<br>
+・System.Drawing.Common - Nugetから、取得できます。<br>
 ・OpenH264 - ネットから取得できます。<br>
 
 ### openH264 とは
