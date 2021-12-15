@@ -35,6 +35,16 @@ https://github.com/cisco/openh264/releases<br>
 ## マスコン状況出力
 このアプリケーションは、マスコンの操作状況を動画で出力できます。形式は .avi です。<br>
 
+## リアルタイム音声生成
+いろいろ、リアルタイムで遊べます。<br>
+キー操作<br>
+```
+W - 変化大<br>
+S - 変化中<br>
+X - 変化小<br>
+B - ブレーキON/OFF<br>
+M - マスコンON/OFF<br>
+```
 
 # 親プロジェクト
 このプログラムは、Raspberry pi zero vvvf から派生しました。
