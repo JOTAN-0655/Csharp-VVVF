@@ -1,24 +1,51 @@
-# Csharp-VVVF
-Generating vvvf sound on PC using C#
+# C# VVVF Simulator
+Simulating VVVF sound on PC.
 
-# Usage
-C# console app on VisualStudio.
+# Description
+This program is for C# console app on VisualStudio.<br>
 
-# Output
-## Audio
-This application will output a sound wave form in wav extension.<br>
-Default is 100 kHz sampling data.<br>
+# Dependencies
+## Generating Video
+・OpenCV - You can get from NuGet<br>
+・System.Drawing.Common - You can get from NuGet<br>
+・OpenH264 - You can get from Internet<br>
 
-## Video
-This application will output a wave form view video in avi extention.<br>
-It is required to use OpenCV dependencies on visualstudio and also openH264 to generate video<br>
+### About openH264
+You can download from this link.<br>
+https://github.com/cisco/openh264/releases<br>
+The version which this application uses is `1.8.0`<br>
+File name is `openh264-1.8.0-win64.dll.bz2`<br>
+After you've download it, extract it.And you will have `openh264-1.8.0-win64.dll`. Put it on same directory as execute file.<br>
 
-### openH264 file
-Its file name will like `openh264-1.8.0-win64.dll.bz2` <br>
-You can download openH264 file from here https://github.com/cisco/openh264/releases <br>
-After you've download it, you just extract bz2 file and you will find `openh264-1.8.0-win64.dll`.<br>
-This file should be placed same directory of console app exe file.
+## Generating Audio
+・There is no dependencies.
+
+## Realtime Audio Generation
+・NAudio - You can get from NuGet.
+
+# Functions
+## VVVF Audio Generation
+This application will export simulated vvvf sound in `.wav` extension.<br>
+The sampling frequency will be 192kHz.<br>
+
+## Waveform Video Generation
+This application will export video in `.avi` extension.
+
+## Control stat Video Generation
+This application can export video of control stat.<br>
+Output extension is `.avi`<br>
+
+## Realtime Audio Generation
+You can play around with it<br>
+Key Binds<br>
+```
+W - Big Change
+S - Middle Change
+X - Small Change
+B - Brake ON/OFF
+M - Mascon ON/OFF
+```
 
 # Parent Project
-This program was ported from : <br>
+This program was ported from RPi-Zero-VVVF
 https://github.com/JOTAN-0655/RPi-Zero-VVVF
