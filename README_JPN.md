@@ -36,6 +36,6 @@ https://github.com/cisco/openh264/releases<br>
 このアプリケーションは、マスコンの操作状況を動画で出力できます。形式は .avi です。<br>
 
 
-## 親プロジェクト
+# 親プロジェクト
 このプログラムは、Raspberry pi zero vvvf から派生しました。
 https://github.com/JOTAN-0655/RPi-Zero-VVVF
