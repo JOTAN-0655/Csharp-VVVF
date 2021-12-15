@@ -39,11 +39,11 @@ https://github.com/cisco/openh264/releases<br>
 いろいろ、リアルタイムで遊べます。<br>
 キー操作<br>
 ```
-W - 変化大<br>
-S - 変化中<br>
-X - 変化小<br>
-B - ブレーキON/OFF<br>
-M - マスコンON/OFF<br>
+W - 変化大
+S - 変化中
+X - 変化小
+B - ブレーキON/OFF
+M - マスコンON/OFF
 ```
 
 # 親プロジェクト
