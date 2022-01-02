@@ -44,6 +44,8 @@ S - Middle Change
 X - Small Change
 B - Brake ON/OFF
 M - Mascon ON/OFF
+R - Reselect
+Enter - Quit
 ```
 
 # Parent Project
