@@ -1,5 +1,5 @@
 # C# VVVF Simulator
-Simulates VVVF inverter sound on PC.
+Simulates VVVF inverter sound on a PC.
 
 # Description
 This program is for the C# console app on VisualStudio.<br>
@@ -26,26 +26,26 @@ After you download and extract the file, you will have `openh264-1.8.0-win64.dll
 # Functions
 ## VVVF Audio Generation
 This application will export simulated vvvf inverter sound in the `.wav` extension.<br>
-The sampling frequency will be 192kHz.<br>
+The sampling frequency is 92kHz.<br>
 
 ## Waveform Video Generation
-This application will export video in the `.avi` extension.
+This application will export video as a `.avi` extension.
 
 ## Control stat Video Generation
 This application can export video of the control stat values.<br>
 The file will be the`.avi` extension. <br>
 
 ## Realtime Audio Generation
-You can play around with it<br>
-Key Binds<br>
+You can generate the audio in real time and control if the sound increases or decreases in frequency as well as the rate that the frequency increases or decreases. <br>
+Key Bindings<br>
 ```
-W - Big Change
-S - Middle Change
-X - Small Change
-B - Brake ON/OFF
-M - Mascon ON/OFF
-R - Reselect
-Enter - Quit
+W - Largest Change in frequency
+S - Medium Change in frequency
+X - Smallest Change in frequency
+B - Brake Toggle between ON/OFF
+M - Mascon Toggle between ON/OFF 
+R - Reselect vvvf inverter sound
+Enter - Exit the program
 ```
 
 # Parent Project
