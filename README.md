@@ -26,7 +26,7 @@ After you download and extract the file, you will have `openh264-1.8.0-win64.dll
 # Functions
 ## VVVF Audio Generation
 This application will export simulated vvvf inverter sound in the `.wav` extension.<br>
-The sampling frequency is 92kHz.<br>
+The sampling frequency is 192kHz.<br>
 
 ## Waveform Video Generation
 This application will export video as a `.avi` extension.
