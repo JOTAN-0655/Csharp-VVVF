@@ -1,6 +1,11 @@
 # C# VVVF Simulator
 Simulates VVVF inverter sound on a PC.
 
+# Notice
+This repository is archived.<br>
+This was moved to here<br>
+`https://github.com/JOTAN-0655/VVVF-Simulator`
+
 # Description
 This program is for the C# console app on VisualStudio.<br>
 
