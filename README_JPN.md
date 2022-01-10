@@ -1,6 +1,11 @@
 # C# VVVF Simulator
 PC上で、VVVFの音を再現します。<br>
 
+# お知らせ
+このレポジトリはアーカイブされています。<br>
+新しいレポジトリはこちらになります。<br>
+`https://github.com/JOTAN-0655/VVVF-Simulator`
+
 # 使い方
 このプログラムは、VisualStudio上のC#コンソールアプリ用です。<br>
 
